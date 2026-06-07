@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>将国神秘小工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Cinema', 'Cormorant Garamond', 'Times New Roman', 'SimSun', serif;
+            background: #1a1a1a url('https://www.transparenttextures.com/patterns/old-map.png') repeat;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        
+        /* 首页样式 */
+        .home-screen {
+            text-align: center;
+            padding-top: 80px;
+        }
+        .home-title {
+            font-size: 28px;
+            color: #f0f0f0;
+            margin-bottom: 60px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .home-btn {
+            padding: 24px 40px;
+            font-size: 20px;
+            border: 2px solid #fff;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            background: #222;
+            color: #fff;
+        }
+        .home-btn:hover {
+            background: #fff;
+            color: #222;
+            transform: translateY(-3px);
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: #222;
+            color: white;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            background: #fff;
+            color: #222;
+        }
+        
+        /* 填表人输入 */
+        .filler-section {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .filler-section label {
+            font-size: 16px;
+            color: #333;
+            white-space: nowrap;
+        }
+        .filler-section input {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            flex: 1;
+            max-width: 200px;
+            font-family: inherit;
+        }
+        
+        /* 角色卡片网格 */
+        .eval-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .eval-card {
+            background: #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+        }
+        .eval-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .eval-card img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .eval-card .char-info {
+            padding: 10px 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .eval-card .char-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .eval-card .char-eval {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            min-height: 2.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-word;
+        }
+        /* 喜好程度背景色 */
+        .eval-card[data-level="特别喜欢"] { background: #ffcccc; }
+        .eval-card[data-level="喜欢"] { background: #ffe0cc; }
+        .eval-card[data-level="好感"] { background: #cce5ff; }
+        .eval-card[data-level="无感"] { background: #d4edda; }
+        .eval-card[data-level="不太喜欢"] { background: #e8d5f2; }
+        .eval-card[data-level="讨厌"] { background: #444444; color: white; }
+        .eval-card[data-level="讨厌"] .char-name,
+        .eval-card[data-level="讨厌"] .char-eval { color: white; }
+        
+        /* 评价弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+        .modal-header h3 {
+            font-size: 18px;
+            color: #333;
+        }
+        .like-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .like-btn {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .like-btn:hover {
+            transform: scale(1.05);
+        }
+        .like-btn.selected {
+            font-weight: 600;
+        }
+        .like-btn[data-level="特别喜欢"] { border-color: #ff4444; color: #ff4444; }
+        .like-btn[data-level="特别喜欢"].selected { background: #ff4444; color: white; }
+        .like-btn[data-level="喜欢"] { border-color: #ff9500; color: #ff9500; }
+        .like-btn[data-level="喜欢"].selected { background: #ff9500; color: white; }
+        .like-btn[data-level="好感"] { border-color: #007aff; color: #007aff; }
+        .like-btn[data-level="好感"].selected { background: #007aff; color: white; }
+        .like-btn[data-level="无感"] { border-color: #34c759; color: #34c759; }
+        .like-btn[data-level="无感"].selected { background: #34c759; color: white; }
+        .like-btn[data-level="不太喜欢"] { border-color: #af52de; color: #af52de; }
+        .like-btn[data-level="不太喜欢"].selected { background: #af52de; color: white; }
+        .like-btn[data-level="讨厌"] { border-color: #333; color: #333; }
+        .like-btn[data-level="讨厌"].selected { background: #333; color: white; }
+        
+        .eval-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            resize: none;
+            font-family: inherit;
+        }
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .modal-btn {
+            padding: 10px 25px;
+            border: 2px solid #222;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .modal-btn-cancel {
+            background: white;
+            color: #222;
+        }
+        .modal-btn-cancel:hover {
+            background: #222;
+            color: white;
+        }
+        .modal-btn-confirm {
+            background: #222;
+            color: white;
+        }
+        .modal-btn-confirm:hover {
+            background: white;
+            color: #222;
+        }
+        
+        /* 评价表生成区 */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.1);
+            overflow: visible !important;
+            max-height: none !important;
+        }
+        .table-title {
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .table-footer {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        /* 生成按钮 */
+        .generate-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 40px;
+            background: #222;
+            color: white;
+            border: 2px solid #fff;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .generate-btn:hover {
+            background: #fff;
+            color: #222;
+            transform: translateY(-2px);
+        }
+        
+        /* CP关系连线 */
+        .cp-form {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.1);
+        }
+        .cp-form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .cp-form select {
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            min-width: 140px;
+            background: white;
+            font-family: inherit;
+        }
+        .cp-form select:focus {
+            outline: none;
+            border-color: #222;
+        }
+        .cp-form label {
+            font-size: 14px;
+            color: #333;
+        }
+        .add-cp-btn {
+            padding: 12px 30px;
+            background: #222;
+            color: white;
+            border: 2px solid #222;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .add-cp-btn:hover {
+            background: #fff;
+            color: #222;
+        }
+        
+        /* CP列表 */
+        .cp-list {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.1);
+        }
+        .cp-list h4 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .cp-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .cp-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .cp-item-info img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .cp-item-info .relation-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .relation-tag[data-level="心肝产品"] { background: #ffe0e0; color: #ff4444; }
+        .relation-tag[data-level="喜欢"] { background: #fff0e0; color: #ff9500; }
+        .relation-tag[data-level="可以接受"] { background: #ffffd0; color: #999900; }
+        .relation-tag[data-level="友情/亲情向"] { background: #e0f0ff; color: #007aff; }
+        .relation-tag[data-level="讨厌"] { background: #f0f0f0; color: #333; }
+        .delete-cp-btn {
+            padding: 6px 15px;
+            background: #222;
+            color: white;
+            border: 2px solid #222;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .delete-cp-btn:hover {
+            background: #fff;
+            color: #222;
+        }
+        .empty-cp {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+        
+        /* 关系图区域 */
+        .cp-diagram {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.1);
+            position: relative;
+            overflow: visible !important;
+            max-height: none !important;
+        }
+        .diagram-title {
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .diagram-canvas {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            margin: 0 auto;
+        }
+        .diagram-char {
+            position: absolute;
+            text-align: center;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        .diagram-char img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #222;
+            object-fit: cover;
+        }
+        .diagram-char .char-name {
+            font-size: 12px;
+            color: #333;
+            margin-top: 5px;
+            white-space: nowrap;
+        }
+        .diagram-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        .legend-color[data-level="心肝产品"] { background: #ff4444; }
+        .legend-color[data-level="喜欢"] { background: #ff9500; }
+        .legend-color[data-level="可以接受"] { background: #999900; }
+        .legend-color[data-level="友情/亲情向"] { background: #007aff; }
+        .legend-color[data-level="讨厌"] { background: #333; }
+        .diagram-footer {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+        }
+        .no-connections {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+        
+        /* 响应式设计 - 移动端优化 */
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            .home-screen {
+                padding-top: 50px;
+            }
+            .home-title {
+                font-size: 22px;
+                margin-bottom: 40px;
+            }
+            .home-btn {
+                padding: 20px 30px;
+                font-size: 18px;
+                min-height: 60px;
+            }
+            .back-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+            .filler-section {
+                flex-wrap: wrap;
+            }
+            .filler-section input {
+                max-width: 100%;
+            }
+            .eval-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .eval-card {
+                min-height: 140px;
+            }
+            .eval-card img {
+                width: 60px;
+                height: 60px;
+            }
+            .modal-content {
+                width: 90%;
+                padding: 20px;
+                margin: 10px;
+            }
+            .modal-header img {
+                width: 60px;
+                height: 60px;
+            }
+            .like-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            .cp-form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .cp-form select {
+                width: 100%;
+                min-width: unset;
+            }
+            .add-cp-btn {
+                width: 100%;
+                padding: 15px;
+                min-height: 50px;
+            }
+            .generate-btn {
+                width: 100%;
+                padding: 18px 30px;
+                min-height: 50px;
+            }
+            .diagram-canvas {
+                height: 300px;
+            }
+            .diagram-char img {
+                width: 50px;
+                height: 50px;
+            }
+            .diagram-char .char-name {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首页 -->
+        <div id="homeScreen" class="screen active home-screen">
+            <h1 class="home-title">将国神秘小工具</h1>
+            <div class="home-buttons">
+                <button class="home-btn" onclick="showScreen('evalScreen')">全角色印象表</button>
+                <button class="home-btn" onclick="showScreen('cpScreen')">CP关系连线图</button>
+            </div>
+        </div>
+        
+        <!-- 评价表页面 -->
+        <div id="evalScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('homeScreen')">返回首页</button>
+            <div class="filler-section">
+                <label>填表人：</label>
+                <input type="text" id="evalFiller" placeholder="请输入您的名字">
+            </div>
+            
+            <div class="table-container" id="evalTableContainer">
+                <h2 class="table-title">《将国之天鹰星》全角色印象表</h2>
+                <div class="eval-grid" id="evalGrid"></div>
+                <div class="table-footer" id="evalTableFooter"></div>
+            </div>
+            
+            <button class="generate-btn" onclick="generateEvalImage()">生成印象表图片</button>
+        </div>
+        
+        <!-- CP关系页面 -->
+        <div id="cpScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('homeScreen')">返回首页</button>
+            <div class="filler-section">
+                <label>填表人：</label>
+                <input type="text" id="cpFiller" placeholder="请输入您的名字">
+            </div>
+            
+            <div class="cp-form">
+                <div class="cp-form-row">
+                    <label>角色A：</label>
+                    <select id="cpCharA"></select>
+                    <label>关系：</label>
+                    <select id="cpRelation"></select>
+                    <label>角色B：</label>
+                    <select id="cpCharB"></select>
+                </div>
+                <button class="add-cp-btn" onclick="addCP()">添加连线</button>
+            </div>
+            
+            <div class="cp-list" id="cpList">
+                <h4>已添加的连线</h4>
+                <div id="cpListContent"></div>
+            </div>
+            
+            <div class="cp-diagram" id="cpDiagram">
+                <h2 class="diagram-title">《将国之天鹰星》CP关系连线图</h2>
+                <div class="diagram-canvas" id="diagramCanvas">
+                    <div class="no-connections" id="noConnections">暂无连线关系</div>
+                </div>
+                <div class="diagram-legend" id="diagramLegend">
+                    <div class="legend-item"><div class="legend-color" data-level="心肝产品"></div>心肝产品</div>
+                    <div class="legend-item"><div class="legend-color" data-level="喜欢"></div>喜欢</div>
+                    <div class="legend-item"><div class="legend-color" data-level="可以接受"></div>可以接受</div>
+                    <div class="legend-item"><div class="legend-color" data-level="友情/亲情向"></div>友情/亲情向</div>
+                    <div class="legend-item"><div class="legend-color" data-level="讨厌"></div>讨厌</div>
+                </div>
+                <div class="diagram-footer" id="cpDiagramFooter"></div>
+            </div>
+            
+            <button class="generate-btn" onclick="generateCPImage()">生成关系图图片</button>
+        </div>
+    </div>
+    
+    <!-- 评价弹窗 -->
+    <div class="modal" id="evalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img id="modalCharImg" src="" alt="">
+                <h3 id="modalCharName"></h3>
+            </div>
+            <div class="like-options" id="likeOptions">
+                <button class="like-btn" data-level="特别喜欢">❤️ 特别喜欢</button>
+                <button class="like-btn" data-level="喜欢">💕 喜欢</button>
+                <button class="like-btn" data-level="好感">💙 好感</button>
+                <button class="like-btn" data-level="无感">💚 无感</button>
+                <button class="like-btn" data-level="不太喜欢">💜 不太喜欢</button>
+                <button class="like-btn" data-level="讨厌">⚫ 讨厌</button>
+            </div>
+            <textarea class="eval-input" id="evalTextInput" maxlength="30" placeholder="请输入对该角色的评价（最多30字）"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/30</div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmEval()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 预置角色数据（将国之天鹰星角色）
+        const characters = [
+            { id: 1, name: '大将军', avatar: 'https://pic1.imgdb.cn/item/6a24f028d71dee7c9418b461.jpg' },
+            { id: 2, name: '玛法穆特', avatar: 'https://pic1.imgdb.cn/item/6a24f13dd71dee7c9418b48b.jpg' },
+            { id: 3, name: '扎加诺斯', avatar: 'https://pic1.imgdb.cn/item/6a24fc85d71dee7c9418dc5f.jpg' },
+            { id: 4, name: '卡利将军', avatar: 'https://pic1.imgdb.cn/item/6a24fc9bd71dee7c9418dc60.jpg' },
+            { id: 5, name: '萨尔迦', avatar: 'https://pic1.imgdb.cn/item/6a24fcadd71dee7c9418dc65.jpg' },
+            { id: 6, name: '库鲁特', avatar: 'https://pic1.imgdb.cn/item/6a24fccad71dee7c9418dc6b.jpg' },
+            { id: 7, name: '泽基', avatar: 'https://pic1.imgdb.cn/item/6a24fcdfd71dee7c9418dc73.jpg' },
+            { id: 8, name: '努尔赞', avatar: 'https://pic1.imgdb.cn/item/6a24fcecd71dee7c9418dc74.jpg' },
+            { id: 9, name: '伊尔凯', avatar: 'https://pic1.imgdb.cn/item/6a24fcf6d71dee7c9418dc78.jpg' },
+            { id: 10, name: '杰米尔', avatar: 'https://pic1.imgdb.cn/item/6a24fd03d71dee7c9418dc7c.jpg' },
+            { id: 11, name: '艾哈迈德', avatar: 'https://pic1.imgdb.cn/item/6a24fd15d71dee7c9418dc81.jpg' },
+            { id: 12, name: '易卜拉欣', avatar: 'https://pic1.imgdb.cn/item/6a24fd26d71dee7c9418dc85.jpg' },
+            { id: 13, name: '苏莱曼', avatar: 'https://pic1.imgdb.cn/item/6a24fd32d71dee7c9418dc89.jpg' },
+            { id: 14, name: '莎拉', avatar: 'https://pic1.imgdb.cn/item/6a24fd3ed71dee7c9418dc8e.jpg' },
+            { id: 15, name: '罗克塞拉娜', avatar: 'https://pic1.imgdb.cn/item/6a24fd4bd71dee7c9418dc92.jpg' },
+            { id: 16, name: '可可', avatar: 'https://pic1.imgdb.cn/item/6a24fd56d71dee7c9418dc97.jpg' },
+            { id: 17, name: '柯兰', avatar: 'https://pic1.imgdb.cn/item/6a24fd64d71dee7c9418dc9e.jpg' },
+            { id: 18, name: '巴拉班', avatar: 'https://pic1.imgdb.cn/item/6a24fd7bd71dee7c9418dca3.jpg' },
+            { id: 19, name: '巴耶济德', avatar: 'https://pic1.imgdb.cn/item/6a24fd86d71dee7c9418dca9.jpg' },
+            { id: 20, name: '爱榭', avatar: 'https://pic1.imgdb.cn/item/6a24fd92d71dee7c9418dcad.jpg' },
+            { id: 21, name: '法特玛', avatar: 'https://pic1.imgdb.cn/item/6a24fd9cd71dee7c9418dcb0.jpg' },
+            { id: 22, name: '凯末尔', avatar: 'https://pic1.imgdb.cn/item/6a24fda9d71dee7c9418dcb6.jpg' },
+            { id: 23, name: '奥尔罕', avatar: 'https://pic1.imgdb.cn/item/6a24fdb3d71dee7c9418dcbb.jpg' },
+            { id: 24, name: '塞里姆', avatar: 'https://pic1.imgdb.cn/item/6a24fdc6d71dee7c9418dcc2.jpg' },
+            { id: 25, name: '伊斯梅尔', avatar: 'https://pic1.imgdb.cn/item/6a24fdd5d71dee7c9418dcc7.jpg' },
+            { id: 26, name: '乌尊', avatar: 'https://pic1.imgdb.cn/item/6a24fde6d71dee7c9418dcce.jpg' },
+            { id: 27, name: '灯塔之都市长', avatar: 'https://pic1.imgdb.cn/item/6a24fe5dd71dee7c9418dce3.jpg' },
+            { id: 28, name: '裘洛斯', avatar: 'https://pic1.imgdb.cn/item/6a24fe68d71dee7c9418dce4.jpg' },
+            { id: 29, name: '君士坦丁', avatar: 'https://pic1.imgdb.cn/item/6a24fe77d71dee7c9418dce5.jpg' },
+            { id: 30, name: '泽农', avatar: 'https://pic1.imgdb.cn/item/6a24fe8fd71dee7c9418dce9.jpg' },
+            { id: 31, name: '尼基弗鲁斯', avatar: 'https://pic1.imgdb.cn/item/6a24fe9bd71dee7c9418dcea.jpg' },
+            { id: 32, name: '安东尼奥·卢西奥', avatar: 'https://pic1.imgdb.cn/item/6a24fea8d71dee7c9418dceb.jpg' },
+            { id: 33, name: '阿比利戈', avatar: 'https://pic1.imgdb.cn/item/6a24febbd71dee7c9418dcec.jpg' },
+            { id: 34, name: '西尔维斯特罗·布雷加', avatar: 'https://pic1.imgdb.cn/item/6a24fef7d71dee7c9418dcf3.jpg' },
+            { id: 35, name: '切奇丽亚', avatar: 'https://pic1.imgdb.cn/item/6a24ff03d71dee7c9418dcf7.jpg' },
+            { id: 36, name: '基诺·博卡内格拉', avatar: 'https://pic1.imgdb.cn/item/6a24ff7bd71dee7c9418dd03.jpg' },
+            { id: 37, name: '阿马德奥·博卡内格拉', avatar: 'https://pic1.imgdb.cn/item/6a24ff87d71dee7c9418dd05.jpg' },
+            { id: 38, name: '罗尼·博卡内格拉', avatar: 'https://pic1.imgdb.cn/item/6a24ff93d71dee7c9418dd06.jpg' },
+            { id: 39, name: '多纳泰罗·多里亚', avatar: 'https://pic1.imgdb.cn/item/6a24ff9dd71dee7c9418dd07.jpg' },
+            { id: 40, name: '妮琪', avatar: 'https://pic1.imgdb.cn/item/6a24ffadd71dee7c9418dd08.jpg' },
+            { id: 41, name: '王大人', avatar: 'https://pic1.imgdb.cn/item/6a24ffb9d71dee7c9418dd0b.jpg' },
+            { id: 42, name: '齐格蒙德三世', avatar: 'https://pic1.imgdb.cn/item/6a24ffcad71dee7c9418dd0e.jpg' },
+            { id: 43, name: '玛尔吉特', avatar: 'https://pic1.imgdb.cn/item/6a250015d71dee7c9418dd14.jpg' },
+            { id: 44, name: '格特鲁德', avatar: 'https://pic1.imgdb.cn/item/6a250032d71dee7c9418dd18.jpg' },
+            { id: 45, name: '卡塔丽娜', avatar: 'https://pic1.imgdb.cn/item/6a250058d71dee7c9418dd1f.jpg' },
+            { id: 46, name: '雅各布', avatar: 'https://pic1.imgdb.cn/item/6a250090d71dee7c9418dd22.jpg' },
+            { id: 47, name: '陶罗斯双子市长', avatar: 'https://pic1.imgdb.cn/item/6a25009ad71dee7c9418dd23.jpg' },
+            { id: 48, name: '埃尔巴赫', avatar: 'https://pic1.imgdb.cn/item/6a2500abd71dee7c9418dd25.jpg' },
+            { id: 49, name: '布丽吉塔', avatar: 'https://pic1.imgdb.cn/item/6a2500b8d71dee7c9418dd28.jpg' },
+            { id: 50, name: '卡尔巴哈尔', avatar: 'https://pic1.imgdb.cn/item/6a2500c7d71dee7c9418dd29.jpg' },
+            { id: 51, name: '卡珊德拉', avatar: 'https://pic1.imgdb.cn/item/6a2500d4d71dee7c9418dd2b.jpg' },
+            { id: 52, name: '巴斯克', avatar: 'https://pic1.imgdb.cn/item/6a2500e5d71dee7c9418dd2c.jpg' },
+            { id: 53, name: '布兰卡', avatar: 'https://pic1.imgdb.cn/item/6a25014dd71dee7c9418dd3c.jpg' },
+            { id: 54, name: '埃蒙斯坦', avatar: 'https://pic1.imgdb.cn/item/6a25015cd71dee7c9418dd3e.jpg' },
+            { id: 55, name: '巴特莱茵皇帝', avatar: 'https://pic1.imgdb.cn/item/6a250136d71dee7c9418dd34.jpg' },
+            { id: 56, name: '列列德里库', avatar: 'https://pic1.imgdb.cn/item/6a250371d71dee7c9418dd8b.jpg' },
+            { id: 57, name: '古拉拉托', avatar: 'https://pic1.imgdb.cn/item/6a25019ed71dee7c9418dd45.jpg' },
+            { id: 58, name: '路易', avatar: 'https://pic1.imgdb.cn/item/6a2501b7d71dee7c9418dd47.jpg' },
+            { id: 59, name: '西蒙', avatar: 'https://pic1.imgdb.cn/item/6a2501c3d71dee7c9418dd48.jpg' },
+            { id: 60, name: '尼克罗', avatar: 'https://pic1.imgdb.cn/item/6a2501ced71dee7c9418dd4a.jpg' },
+            { id: 61, name: '皮诺', avatar: 'https://pic1.imgdb.cn/item/6a2501dbd71dee7c9418dd4c.jpg' },
+            { id: 62, name: '莉莉', avatar: 'https://pic1.imgdb.cn/item/6a2501fcd71dee7c9418dd4d.jpg' },
+            { id: 63, name: '弗伦岑', avatar: 'https://pic1.imgdb.cn/item/6a250206d71dee7c9418dd4f.jpg' },
+            { id: 64, name: '亚当', avatar: 'https://pic1.imgdb.cn/item/6a250212d71dee7c9418dd51.jpg' },
+            { id: 65, name: '维希特', avatar: 'https://pic1.imgdb.cn/item/6a250230d71dee7c9418dd59.jpg' },
+            { id: 66, name: '托特', avatar: 'https://pic1.imgdb.cn/item/6a250e38d71dee7c94190666.jpg' },
+            { id: 67, name: '温克尔曼', avatar: 'https://pic1.imgdb.cn/item/6a25023cd71dee7c9418dd5c.jpg' },
+            { id: 68, name: '基尔伯特', avatar: 'https://pic1.imgdb.cn/item/6a250248d71dee7c9418dd5e.jpg' },
+            { id: 69, name: '史密特', avatar: 'https://pic1.imgdb.cn/item/6a250255d71dee7c9418dd60.jpg' },
+            { id: 70, name: '罗伊斯', avatar: 'https://pic1.imgdb.cn/item/6a250261d71dee7c9418dd61.jpg' },
+            { id: 71, name: '克劳斯', avatar: 'https://pic1.imgdb.cn/item/6a25026ed71dee7c9418dd62.jpg' },
+            { id: 72, name: '丹尼尔', avatar: 'https://pic1.imgdb.cn/item/6a250329d71dee7c9418dd80.jpg' },
+            { id: 73, name: '科莉尼亚', avatar: 'https://pic1.imgdb.cn/item/6a25031dd71dee7c9418dd7d.jpg' },
+            { id: 74, name: '克里斯托弗', avatar: 'https://pic1.imgdb.cn/item/6a250305d71dee7c9418dd7b.jpg' },
+            { id: 75, name: '巴雷', avatar: 'https://pic1.imgdb.cn/item/6a2502f5d71dee7c9418dd77.jpg' },
+            { id: 76, name: '寇伯特', avatar: 'https://pic1.imgdb.cn/item/6a2502ead71dee7c9418dd74.jpg' },
+            { id: 77, name: '埃莉诺', avatar: 'https://pic1.imgdb.cn/item/6a250d01d71dee7c94190659.jpg' },
+            { id: 78, name: '特奥安德罗什', avatar: 'https://pic1.imgdb.cn/item/6a2502d1d71dee7c9418dd6d.jpg' },
+            { id: 79, name: '瑞恩', avatar: 'https://pic1.imgdb.cn/item/6a2502c4d71dee7c9418dd6a.jpg' },
+            { id: 80, name: '吹雪之町伯爵', avatar: 'https://pic1.imgdb.cn/item/6a2502b6d71dee7c9418dd69.jpg' },
+            { id: 81, name: '雅克', avatar: 'https://pic1.imgdb.cn/item/6a2502a9d71dee7c9418dd67.jpg' },
+            { id: 82, name: '西格弗里', avatar: 'https://pic1.imgdb.cn/item/6a250297d71dee7c9418dd65.jpg' }
+        ];
+
+        // 评价数据
+        const evaluations = {};
+        
+        // CP关系数据
+        const cpRelations = [];
+        
+        // 当前编辑的角色
+        let currentEditChar = null;
+        
+        // 关系类型映射
+        const relationTypes = {
+            '心肝产品': '#ff4444',
+            '喜欢': '#ff9500',
+            '可以接受': '#999900',
+            '友情/亲情向': '#007aff',
+            '讨厌': '#333333'
+        };
+
+        // 喜好程度颜色映射
+        const levelColors = {
+            '特别喜欢': '#ffcccc',
+            '喜欢': '#ffe0cc',
+            '好感': '#cce5ff',
+            '无感': '#d4edda',
+            '不太喜欢': '#e8d5f2',
+            '讨厌': '#444444'
+        };
+
+        // 初始化
+        function init() {
+            renderEvalGrid();
+            initCPSelects();
+        }
+        
+        // 页面切换
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'evalScreen') {
+                updateEvalTableFooter();
+            } else if (screenId === 'cpScreen') {
+                renderCPDiagram();
+            }
+        }
+        
+        // 渲染评价角色网格
+        function renderEvalGrid() {
+            const container = document.getElementById('evalGrid');
+            container.innerHTML = characters.map(char => {
+                const eval = evaluations[char.id] || {};
+                return `
+                    <div class="eval-card ${eval.level ? 'has-level' : ''}" data-level="${eval.level || ''}" onclick="openEvalModal(${char.id})">
+                        <img src="${char.avatar}" alt="${char.name}" crossorigin="anonymous">
+                        <div class="char-info">
+                            <div class="char-name">${char.name}</div>
+                            <div class="char-eval">${eval.text || ''}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 初始化CP下拉框
+        function initCPSelects() {
+            const options = '<option value="">请选择</option>' + 
+                characters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            
+            document.getElementById('cpCharA').innerHTML = options;
+            document.getElementById('cpCharB').innerHTML = options;
+            
+            const relationOptions = Object.keys(relationTypes).map(r => 
+                `<option value="${r}">${r}</option>`
+            ).join('');
+            document.getElementById('cpRelation').innerHTML = relationOptions;
+        }
+        
+        // 打开评价弹窗
+        function openEvalModal(charId) {
+            currentEditChar = characters.find(c => c.id === charId);
+            const eval = evaluations[charId] || {};
+            
+            document.getElementById('modalCharImg').src = currentEditChar.avatar;
+            document.getElementById('modalCharName').textContent = currentEditChar.name;
+            document.getElementById('evalTextInput').value = eval.text || '';
+            document.getElementById('charCount').textContent = (eval.text || '').length;
+            
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.level === eval.level);
+            });
+            
+            document.getElementById('evalModal').classList.add('active');
+        }
+        
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('evalModal').classList.remove('active');
+            currentEditChar = null;
+        }
+        
+        // 确认评价
+        function confirmEval() {
+            if (!currentEditChar) return;
+            
+            const level = document.querySelector('.like-btn.selected')?.dataset.level || '';
+            const text = document.getElementById('evalTextInput').value.trim();
+            
+            evaluations[currentEditChar.id] = { level, text };
+            
+            closeModal();
+            renderEvalGrid();
+            updateEvalTableFooter();
+        }
+        
+        // 字数统计
+        document.getElementById('evalTextInput').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+        
+        // 喜好按钮点击
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.like-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+        
+        // 更新评价表底部
+        function updateEvalTableFooter() {
+            const filler = document.getElementById('evalFiller').value || '______';
+            document.getElementById('evalTableFooter').innerHTML = 
+                `制表人：Cupid011011<br>填表人：${filler}`;
+        }
+        
+        // 添加CP关系
+        function addCP() {
+            const charAId = parseInt(document.getElementById('cpCharA').value);
+            const charBId = parseInt(document.getElementById('cpCharB').value);
+            const relation = document.getElementById('cpRelation').value;
+            
+            if (!charAId || !charBId || !relation) {
+                alert('请完整选择角色和关系');
+                return;
+            }
+            
+            cpRelations.push({ charA: charAId, charB: charBId, relation });
+            
+            document.getElementById('cpCharA').value = '';
+            document.getElementById('cpCharB').value = '';
+            document.getElementById('cpRelation').value = '';
+            
+            renderCPList();
+            renderCPDiagram();
+        }
+        
+        // 删除CP关系
+        function deleteCP(index) {
+            cpRelations.splice(index, 1);
+            renderCPList();
+            renderCPDiagram();
+        }
+        
+        // 渲染CP列表
+        function renderCPList() {
+            const container = document.getElementById('cpListContent');
+            
+            if (cpRelations.length === 0) {
+                container.innerHTML = '<div class="empty-cp">暂无连线关系</div>';
+                return;
+            }
+            
+            container.innerHTML = cpRelations.map((cp, index) => {
+                const charA = characters.find(c => c.id === cp.charA);
+                const charB = characters.find(c => c.id === cp.charB);
+                const isSelfLoop = cp.charA === cp.charB;
+                return `
+                    <div class="cp-item">
+                        <div class="cp-item-info">
+                            <img src="${charA.avatar}" alt="${charA.name}">
+                            ${isSelfLoop ? '<span>⟳</span>' : '<span>↔</span>'}
+                            <span class="relation-tag" data-level="${cp.relation}">${cp.relation}</span>
+                            ${!isSelfLoop ? `<img src="${charB.avatar}" alt="${charB.name}"><span>${charA.name} ↔ ${charB.name}</span>` : `<span>${charA.name}（自环）</span>`}
+                        </div>
+                        <button class="delete-cp-btn" onclick="deleteCP(${index})">删除</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 渲染CP关系图
+        function renderCPDiagram() {
+            const canvas = document.getElementById('diagramCanvas');
+            const noConnections = document.getElementById('noConnections');
+            
+            // 清除旧的SVG和角色元素
+            const oldSvgs = canvas.querySelectorAll('svg');
+            oldSvgs.forEach(s => s.remove());
+            const oldChars = canvas.querySelectorAll('.diagram-char');
+            oldChars.forEach(c => c.remove());
+            
+            if (cpRelations.length === 0) {
+                noConnections.style.display = 'block';
+                return;
+            }
+            
+            noConnections.style.display = 'none';
+            
+            // 获取出现在连线中的角色
+            const involvedCharIds = new Set();
+            cpRelations.forEach(cp => {
+                involvedCharIds.add(cp.charA);
+                involvedCharIds.add(cp.charB);
+            });
+            const involvedChars = characters.filter(c => involvedCharIds.has(c.id));
+            
+            // 计算位置（圆形排列）
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = 180;
+            const radius = Math.min(150, 80 + involvedChars.length * 10);
+            
+            const charPositions = {};
+            involvedChars.forEach((char, i) => {
+                const angle = (2 * Math.PI * i / involvedChars.length) - Math.PI / 2;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                charPositions[char.id] = { x, y, char };
+            });
+            
+            // 头像半径（用于计算连线起点）
+            const avatarRadius = 33; // 60px头像的一半加上边框
+            
+            // 先创建画布用于绘制连线（包括自环），放在底层
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.style.zIndex = '1';
+            
+            // 绘制连线
+            cpRelations.forEach(cp => {
+                const posA = charPositions[cp.charA];
+                const posB = charPositions[cp.charB];
+                
+                if (posA && posB) {
+                    if (cp.charA === cp.charB) {
+                        // 自环连线 - 使用虚线圆环+小圆点，美观且稳定
+                        const loopRadius = avatarRadius + 15;
+                        
+                        // 绘制一个完整的虚线圆环作为自环标记
+                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        circle.setAttribute('cx', posA.x);
+                        circle.setAttribute('cy', posA.y);
+                        circle.setAttribute('r', loopRadius);
+                        circle.setAttribute('stroke', relationTypes[cp.relation]);
+                        circle.setAttribute('stroke-width', '2.5');
+                        circle.setAttribute('stroke-dasharray', '4 3');
+                        circle.setAttribute('fill', 'none');
+                        svg.appendChild(circle);
+                        
+                        // 在圆环上添加一个小圆点指示方向（位于顶部）
+                        const dotAngle = -Math.PI / 2;
+                        const dotX = posA.x + (loopRadius + 2) * Math.cos(dotAngle);
+                        const dotY = posA.y + (loopRadius + 2) * Math.sin(dotAngle);
+                        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        dot.setAttribute('cx', dotX);
+                        dot.setAttribute('cy', dotY);
+                        dot.setAttribute('r', '4');
+                        dot.setAttribute('fill', relationTypes[cp.relation]);
+                        svg.appendChild(dot);
+                    } else {
+                        // 正常连线 - 计算从头像边缘开始的点
+                        const dx = posB.x - posA.x;
+                        const dy = posB.y - posA.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // 计算单位向量
+                        const ux = dx / dist;
+                        const uy = dy / dist;
+                        
+                        // 计算起点和终点（在头像边缘）
+                        const startX = posA.x + ux * avatarRadius;
+                        const startY = posA.y + uy * avatarRadius;
+                        const endX = posB.x - ux * avatarRadius;
+                        const endY = posB.y - uy * avatarRadius;
+                        
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', startX);
+                        line.setAttribute('y1', startY);
+                        line.setAttribute('x2', endX);
+                        line.setAttribute('y2', endY);
+                        line.setAttribute('stroke', relationTypes[cp.relation]);
+                        line.setAttribute('stroke-width', '2');
+                        line.setAttribute('stroke-linecap', 'round');
+                        svg.appendChild(line);
+                    }
+                }
+            });
+            
+            // 将连线SVG添加到画布
+            canvas.appendChild(svg);
+            
+            // 再创建角色元素（头像），放在连线上层
+            Object.values(charPositions).forEach(({ x, y, char }) => {
+                const div = document.createElement('div');
+                div.className = 'diagram-char';
+                div.style.left = x + 'px';
+                div.style.top = y + 'px';
+                div.innerHTML = `
+                    <img src="${char.avatar}" alt="${char.name}" crossorigin="anonymous">
+                    <div class="char-name">${char.name}</div>
+                `;
+                canvas.appendChild(div);
+            });
+            
+            // 更新表尾
+            const filler = document.getElementById('cpFiller').value || '______';
+            document.getElementById('cpDiagramFooter').innerHTML = 
+                `制表人：Cupid011011<br>填表人：${filler}`;
+        }
+        
+        // 生成评价表图片
+        async function generateEvalImage() {
+            const container = document.getElementById('evalTableContainer');
+            
+            // 等待所有图片加载完成
+            const images = container.querySelectorAll('img');
+            await Promise.all(Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+            }));
+            
+            try {
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: false,
+                    width: container.scrollWidth,
+                    height: container.scrollHeight,
+                    windowWidth: container.scrollWidth,
+                    windowHeight: container.scrollHeight
+                });
+                downloadImage(canvas, '角色印象表.png');
+            } catch (err) {
+                alert('生成图片失败：' + err.message);
+            }
+        }
+        
+        // 生成CP关系图图片
+        async function generateCPImage() {
+            const container = document.getElementById('cpDiagram');
+            
+            // 等待所有图片加载完成
+            const images = container.querySelectorAll('img');
+            await Promise.all(Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+            }));
+            
+            try {
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: false,
+                    width: container.scrollWidth,
+                    height: container.scrollHeight,
+                    windowWidth: container.scrollWidth,
+                    windowHeight: container.scrollHeight
+                });
+                downloadImage(canvas, 'CP关系连线图.png');
+            } catch (err) {
+                alert('生成图片失败：' + err.message);
+            }
+        }
+        
+        // 下载图片
+        function downloadImage(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // 输入事件监听
+        document.getElementById('evalFiller').addEventListener('input', updateEvalTableFooter);
+        document.getElementById('cpFiller').addEventListener('input', renderCPDiagram);
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+        window.addEventListener('resize', renderCPDiagram);
+    </script>
+</body>
+</html>
