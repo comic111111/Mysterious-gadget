@@ -84,6 +84,37 @@
             color: #222;
         }
         
+        /* 语言切换按钮 */
+        .lang-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 100;
+            background: #222;
+        }
+        .lang-toggle button {
+            padding: 8px 14px;
+            background: #222;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .lang-toggle button.active {
+            background: #fff;
+            color: #222;
+        }
+        .lang-toggle button:hover:not(.active) {
+            background: #333;
+        }
+        
         /* 填表人输入 */
         .filler-section {
             background: white;
@@ -808,6 +839,14 @@
                 font-size: 14px;
                 min-height: 44px;
             }
+            .lang-toggle {
+                top: 15px;
+                right: 15px;
+            }
+            .lang-toggle button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
             .filler-section {
                 flex-wrap: wrap;
             }
@@ -934,102 +973,108 @@
 </head>
 <body>
     <div class="container">
+        <!-- 语言切换按钮（全局固定） -->
+        <div class="lang-toggle">
+            <button id="langZh" class="active" onclick="setLanguage('zh')">中文</button>
+            <button id="langEn" onclick="setLanguage('en')">EN</button>
+            <button id="langJa" onclick="setLanguage('ja')">日本語</button>
+        </div>
         <!-- 首页 -->
         <div id="homeScreen" class="screen active home-screen">
-            <h1 class="home-title">将国神秘小工具</h1>
+            <h1 class="home-title" data-i18n="home.title">将国神秘小工具</h1>
             <div class="home-buttons">
-                <button class="home-btn" onclick="showScreen('evalScreen')">全角色印象表</button>
-                <button class="home-btn" onclick="showScreen('cpScreen')">CP关系连线图</button>
-                <button class="home-btn" onclick="showScreen('randomScreen')">随机CP抽取器</button>
+                <button class="home-btn" onclick="showScreen('evalScreen')" data-i18n="home.evalBtn">全角色印象表</button>
+                <button class="home-btn" onclick="showScreen('cpScreen')" data-i18n="home.cpBtn">CP关系连线图</button>
+                <button class="home-btn" onclick="showScreen('randomScreen')" data-i18n="home.randomBtn">随机CP抽取器</button>
             </div>
         </div>
         
         <!-- 评价表页面 -->
         <div id="evalScreen" class="screen">
-            <button class="back-btn" onclick="showScreen('homeScreen')">返回首页</button>
+            <button class="back-btn" onclick="showScreen('homeScreen')" data-i18n="common.back">返回首页</button>
             <div class="filler-section">
-                <label>填表人：</label>
-                <input type="text" id="evalFiller" placeholder="请输入您的名字">
+                <label data-i18n="common.filler">填表人：</label>
+                <input type="text" id="evalFiller" placeholder="">
             </div>
             
             <div class="table-container" id="evalTableContainer">
-                <h2 class="table-title">《将国之天鹰星》全角色印象表</h2>
+                <h2 class="table-title" data-i18n="eval.title">《将国之天鹰星》全角色印象表</h2>
                 <div class="eval-grid" id="evalGrid"></div>
                 <div class="table-footer" id="evalTableFooter"></div>
             </div>
             
-            <button class="generate-btn" onclick="generateEvalImage()">生成印象表图片</button>
+            <button class="generate-btn" onclick="generateEvalImage()" data-i18n="eval.generate">生成印象表图片</button>
         </div>
         
         <!-- CP关系页面 -->
         <div id="cpScreen" class="screen">
-            <button class="back-btn" onclick="showScreen('homeScreen')">返回首页</button>
+            <button class="back-btn" onclick="showScreen('homeScreen')" data-i18n="common.back">返回首页</button>
             <div class="filler-section">
-                <label>填表人：</label>
-                <input type="text" id="cpFiller" placeholder="请输入您的名字">
+                <label data-i18n="common.filler">填表人：</label>
+                <input type="text" id="cpFiller" placeholder="">
             </div>
             
             <div class="cp-form">
                 <div class="cp-form-row">
-                    <label>角色A：</label>
+                    <label data-i18n="cp.charA">角色A：</label>
                     <select id="cpCharA"></select>
-                    <label>关系：</label>
+                    <label data-i18n="cp.relation">关系：</label>
                     <select id="cpRelation"></select>
-                    <label>角色B：</label>
+                    <label data-i18n="cp.charB">角色B：</label>
                     <select id="cpCharB"></select>
                 </div>
-                <button class="add-cp-btn" onclick="addCP()">添加连线</button>
+                <button class="add-cp-btn" onclick="addCP()" data-i18n="cp.add">添加连线</button>
             </div>
             
             <div class="cp-list" id="cpList">
-                <h4>已添加的连线</h4>
+                <h4 data-i18n="cp.listTitle">已添加的连线</h4>
                 <div id="cpListContent"></div>
             </div>
             
             <div class="cp-diagram" id="cpDiagram">
-                <h2 class="diagram-title">《将国之天鹰星》CP关系连线图</h2>
+                <h2 class="diagram-title" data-i18n="cp.diagramTitle">《将国之天鹰星》CP关系连线图</h2>
                 <div class="diagram-canvas" id="diagramCanvas">
-                    <div class="no-connections" id="noConnections">暂无连线关系</div>
+                    <div class="no-connections" id="noConnections" data-i18n="cp.noConnections">暂无连线关系</div>
                 </div>
                 <div class="diagram-legend" id="diagramLegend">
-                    <div class="legend-item"><div class="legend-color" data-level="心肝产品"></div>心肝产品</div>
-                    <div class="legend-item"><div class="legend-color" data-level="喜欢"></div>喜欢</div>
-                    <div class="legend-item"><div class="legend-color" data-level="可以接受"></div>可以接受</div>
-                    <div class="legend-item"><div class="legend-color" data-level="友情/亲情向"></div>友情/亲情向</div>
-                    <div class="legend-item"><div class="legend-color" data-level="讨厌"></div>讨厌</div>
+                    <div class="legend-item"><div class="legend-color" data-level="心肝产品"></div>心肝产品 / OTP</div>
+                    <div class="legend-item"><div class="legend-color" data-level="喜欢"></div>喜欢 / Like</div>
+                    <div class="legend-item"><div class="legend-color" data-level="可以接受"></div>可以接受 / Okay</div>
+                    <div class="legend-item"><div class="legend-color" data-level="友情/亲情向"></div>友情/亲情向 / Friendship</div>
+                    <div class="legend-item"><div class="legend-color" data-level="讨厌"></div>讨厌 / Hate</div>
                 </div>
                 <div class="diagram-footer" id="cpDiagramFooter"></div>
             </div>
             
-            <button class="generate-btn" onclick="generateCPImage()">生成关系图图片</button>
+            <button class="generate-btn" onclick="generateCPImage()" data-i18n="cp.generate">生成关系图图片</button>
         </div>
         
         <!-- 随机CP抽取器页面 -->
         <div id="randomScreen" class="screen">
-            <button class="back-btn" onclick="showScreen('homeScreen')">返回首页</button>
-            <h2 class="random-title">随机CP抽取器</h2>
+            <button class="back-btn" onclick="showScreen('homeScreen')" data-i18n="common.back">返回首页</button>
+            <h2 class="random-title" data-i18n="random.title">随机CP抽取器</h2>
             
             <div class="random-result" id="randomResult">
-                <div class="random-placeholder">点击下方按钮，抽取一对 CP</div>
+                <div class="random-placeholder" data-i18n="random.placeholder">点击下方按钮，抽取一对 CP</div>
             </div>
             
             <div class="filter-box">
-                <label class="filter-item"><input type="checkbox" id="chkMob"> 允许 Mob 参与</label>
-                <label class="filter-item"><input type="checkbox" id="chkExcludeOld"> 排除老年角色</label>
-                <label class="filter-item"><input type="checkbox" id="chkExcludeControversial"> 排除争议角色</label>
-                <label class="filter-item"><input type="checkbox" id="chkHighFreq"> 仅限高频角色</label>
-                <label class="filter-item"><input type="checkbox" id="chkAnimal"> 允许动物参与</label>
+                <label class="filter-item"><input type="checkbox" id="chkMob"> <span data-i18n="random.mob">允许 Mob 参与</span></label>
+                <label class="filter-item"><input type="checkbox" id="chkExcludeOld"> <span data-i18n="random.excludeOld">排除老年角色</span></label>
+                <label class="filter-item"><input type="checkbox" id="chkExcludeControversial"> <span data-i18n="random.excludeControversial">排除争议角色</span></label>
+                <label class="filter-item"><input type="checkbox" id="chkHighFreq"> <span data-i18n="random.highFreq">仅限高频角色</span></label>
+                <label class="filter-item"><input type="checkbox" id="chkAnimal"> <span data-i18n="random.animal">允许动物参与</span></label>
             </div>
             
-            <button class="draw-btn" id="drawBtn" onclick="drawCP()">抽 取 CP</button>
+            <button class="draw-btn" id="drawBtn" onclick="drawCP()" data-i18n="random.draw">抽 取 CP</button>
             
             <div class="random-actions">
-                <button class="action-btn" onclick="copyCPResult()">复制结果</button>
-                <button class="action-btn" onclick="generateRandomImage()">生成图片</button>
+                <button class="action-btn" onclick="copyCPResult()" data-i18n="random.copy">复制结果</button>
+                <button class="action-btn" onclick="generateRandomImage()" data-i18n="random.generate">生成图片</button>
             </div>
             
             <div class="random-history">
-                <h4>历史记录（最近10条）</h4>
+                <h4 data-i18n="random.history">历史记录（最近10条）</h4>
                 <div id="randomHistoryList"></div>
             </div>
         </div>
@@ -1050,101 +1095,366 @@
                 <button class="like-btn" data-level="不太喜欢">💜 不太喜欢</button>
                 <button class="like-btn" data-level="讨厌">⚫ 讨厌</button>
             </div>
-            <textarea class="eval-input" id="evalTextInput" maxlength="30" placeholder="请输入对该角色的评价（最多30字）"></textarea>
+            <textarea class="eval-input" id="evalTextInput" maxlength="30" placeholder=""></textarea>
             <div class="char-count"><span id="charCount">0</span>/30</div>
             <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
-                <button class="modal-btn modal-btn-confirm" onclick="confirmEval()">确认</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()" data-i18n="common.cancel">取消</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmEval()" data-i18n="common.confirm">确认</button>
             </div>
         </div>
     </div>
     <script>
+        // ===== 国际化（中/英/日三语）=====
+        const i18n = {
+            zh: {
+                'home.title': '将国神秘小工具',
+                'home.evalBtn': '全角色印象表',
+                'home.cpBtn': 'CP关系连线图',
+                'home.randomBtn': '随机CP抽取器',
+                'common.back': '返回首页',
+                'common.filler': '填表人：',
+                'common.cancel': '取消',
+                'common.confirm': '确认',
+                'common.selectPlaceholder': '请选择',
+                'common.fillerPlaceholder': '请输入您的名字',
+                'eval.title': '《将国之天鹰星》全角色印象表',
+                'eval.generate': '生成印象表图片',
+                'eval.footerCreator': '制表人：Cupid011011',
+                'eval.footerFiller': '填表人：',
+                'eval.modalPlaceholder': '请输入对该角色的评价（最多30字）',
+                'cp.charA': '角色A：',
+                'cp.relation': '关系：',
+                'cp.charB': '角色B：',
+                'cp.add': '添加连线',
+                'cp.listTitle': '已添加的连线',
+                'cp.diagramTitle': '《将国之天鹰星》CP关系连线图',
+                'cp.noConnections': '暂无连线关系',
+                'cp.generate': '生成关系图图片',
+                'cp.alertIncomplete': '请完整选择角色和关系',
+                'cp.delete': '删除',
+                'cp.selfLoop': '（自环）',
+                'cp.footerCreator': '制表人：Cupid011011',
+                'cp.footerFiller': '填表人：',
+                'random.title': '随机CP抽取器',
+                'random.placeholder': '点击下方按钮，抽取一对 CP',
+                'random.mob': '允许 Mob 参与',
+                'random.excludeOld': '排除老年角色',
+                'random.excludeControversial': '排除争议角色',
+                'random.highFreq': '仅限高频角色',
+                'random.animal': '允许动物参与',
+                'random.draw': '抽 取 CP',
+                'random.drawing': '抽 取 中',
+                'random.drawAgain': '再 抽 一 次',
+                'random.copy': '复制结果',
+                'random.generate': '生成图片',
+                'random.history': '历史记录（最近10条）',
+                'random.noHistory': '暂无历史记录',
+                'random.alertFirst': '请先抽取一对CP',
+                'random.alertCopied': '已复制：',
+                'random.alertCopyFail': '复制失败，请手动复制',
+                'random.alertNotEnough': '当前筛选条件下角色不足，无法抽取',
+                'random.animalTag': '动物',
+                'random.filenameRandom': '随机CP.png',
+                'random.filenameEval': '角色印象表.png',
+                'random.filenameCP': 'CP关系连线图.png',
+                'common.alertGenFail': '生成图片失败：',
+                'like.特别喜欢': '特别喜欢',
+                'like.喜欢': '喜欢',
+                'like.好感': '好感',
+                'like.无感': '无感',
+                'like.不太喜欢': '不太喜欢',
+                'like.讨厌': '讨厌',
+                'rel.心肝产品': '心肝产品',
+                'rel.喜欢': '喜欢',
+                'rel.可以接受': '可以接受',
+                'rel.友情/亲情向': '友情/亲情向',
+                'rel.讨厌': '讨厌'
+            },
+            en: {
+                'home.title': 'Mysterious Gadget of Shoukoku no Altair',
+                'home.evalBtn': 'Character Impression Chart',
+                'home.cpBtn': 'CP Relationship Chart',
+                'home.randomBtn': 'Random CP Generator',
+                'common.back': 'Back to Home',
+                'common.filler': 'Filled by:',
+                'common.cancel': 'Cancel',
+                'common.confirm': 'Confirm',
+                'common.selectPlaceholder': 'Please select',
+                'common.fillerPlaceholder': 'Enter your name',
+                'eval.title': 'Shoukoku no Altair Character Impression Chart',
+                'eval.generate': 'Generate Chart Image',
+                'eval.footerCreator': 'Created by: Cupid011011',
+                'eval.footerFiller': 'Filled by:',
+                'eval.modalPlaceholder': 'Write your impression (max 30 characters)',
+                'cp.charA': 'Character A:',
+                'cp.relation': 'Relationship:',
+                'cp.charB': 'Character B:',
+                'cp.add': 'Add Connection',
+                'cp.listTitle': 'Added Connections',
+                'cp.diagramTitle': 'Shoukoku no Altair CP Relationship Chart',
+                'cp.noConnections': 'No connections yet',
+                'cp.generate': 'Generate Chart Image',
+                'cp.alertIncomplete': 'Please select both characters and a relationship',
+                'cp.delete': 'Delete',
+                'cp.selfLoop': '(self-loop)',
+                'cp.footerCreator': 'Created by: Cupid011011',
+                'cp.footerFiller': 'Filled by:',
+                'random.title': 'Random CP Generator',
+                'random.placeholder': 'Click the button below to draw a CP',
+                'random.mob': 'Allow Mob',
+                'random.excludeOld': 'Exclude Elderly',
+                'random.excludeControversial': 'Exclude Controversial',
+                'random.highFreq': 'High-Frequency Only',
+                'random.animal': 'Allow Animals',
+                'random.draw': 'DRAW CP',
+                'random.drawing': 'DRAWING',
+                'random.drawAgain': 'DRAW AGAIN',
+                'random.copy': 'Copy Result',
+                'random.generate': 'Generate Image',
+                'random.history': 'History (Last 10)',
+                'random.noHistory': 'No history yet',
+                'random.alertFirst': 'Please draw a CP first',
+                'random.alertCopied': 'Copied: ',
+                'random.alertCopyFail': 'Copy failed, please copy manually',
+                'random.alertNotEnough': 'Not enough characters under current filters',
+                'random.animalTag': 'Animal',
+                'random.filenameRandom': 'RandomCP.png',
+                'random.filenameEval': 'ImpressionChart.png',
+                'random.filenameCP': 'CPChart.png',
+                'common.alertGenFail': 'Image generation failed: ',
+                'like.特别喜欢': 'Favorite',
+                'like.喜欢': 'Like',
+                'like.好感': 'Positive',
+                'like.无感': 'Neutral',
+                'like.不太喜欢': 'Dislike',
+                'like.讨厌': 'Hate',
+                'rel.心肝产品': 'OTP',
+                'rel.喜欢': 'Like',
+                'rel.可以接受': 'Okay',
+                'rel.友情/亲情向': 'Friendship',
+                'rel.讨厌': 'Hate'
+            },
+            ja: {
+                'home.title': '将国のアルタイル 神秘ツール',
+                'home.evalBtn': '全キャラ印象表',
+                'home.cpBtn': 'CP関係図',
+                'home.randomBtn': 'ランダムCPジェネレーター',
+                'common.back': 'ホームに戻る',
+                'common.filler': '記入者：',
+                'common.cancel': 'キャンセル',
+                'common.confirm': '確認',
+                'common.selectPlaceholder': '選択してください',
+                'common.fillerPlaceholder': 'お名前を入力してください',
+                'eval.title': '『将国のアルタイル』全キャラ印象表',
+                'eval.generate': '印象表画像を生成',
+                'eval.footerCreator': '作成者：Cupid011011',
+                'eval.footerFiller': '記入者：',
+                'eval.modalPlaceholder': 'このキャラへの印象を入力（最大30文字）',
+                'cp.charA': 'キャラA：',
+                'cp.relation': '関係：',
+                'cp.charB': 'キャラB：',
+                'cp.add': '線を追加',
+                'cp.listTitle': '追加済みの線',
+                'cp.diagramTitle': '『将国のアルタイル』CP関係図',
+                'cp.noConnections': '線がまだありません',
+                'cp.generate': '関係図画像を生成',
+                'cp.alertIncomplete': 'キャラと関係を選択してください',
+                'cp.delete': '削除',
+                'cp.selfLoop': '（自環）',
+                'cp.footerCreator': '作成者：Cupid011011',
+                'cp.footerFiller': '記入者：',
+                'random.title': 'ランダムCPジェネレーター',
+                'random.placeholder': '下のボタンを押してCPを引いてください',
+                'random.mob': 'Mobを許可',
+                'random.excludeOld': '高齢キャラを除外',
+                'random.excludeControversial': '議論キャラを除外',
+                'random.highFreq': '高頻度キャラのみ',
+                'random.animal': '動物を許可',
+                'random.draw': 'CPを引く',
+                'random.drawing': '抽選中',
+                'random.drawAgain': 'もう一度引く',
+                'random.copy': '結果をコピー',
+                'random.generate': '画像を生成',
+                'random.history': '履歴（最新10件）',
+                'random.noHistory': '履歴がありません',
+                'random.alertFirst': '先にCPを引いてください',
+                'random.alertCopied': 'コピーしました：',
+                'random.alertCopyFail': 'コピーに失敗しました',
+                'random.alertNotEnough': '現在の条件ではキャラが足りません',
+                'random.animalTag': '動物',
+                'random.filenameRandom': 'ランダムCP.png',
+                'random.filenameEval': 'キャラ印象表.png',
+                'random.filenameCP': 'CP関係図.png',
+                'common.alertGenFail': '画像生成に失敗しました：',
+                'like.特别喜欢': '大好き',
+                'like.喜欢': '好き',
+                'like.好感': '好感',
+                'like.无感': '普通',
+                'like.不太喜欢': 'あまり好きじゃない',
+                'like.讨厌': '嫌い',
+                'rel.心肝产品': '推しカプ',
+                'rel.喜欢': '好き',
+                'rel.可以接受': 'あり',
+                'rel.友情/亲情向': '友情/家族',
+                'rel.讨厌': '嫌い'
+            }
+        };
+        
+        // 关系类型按当前语言显示
+        function relationLabel(rel) {
+            return t('rel.' + rel);
+        }
+        
+        // 喜好程度 emoji 前缀
+        const likeEmojis = {
+            '特别喜欢': '❤️', '喜欢': '💕', '好感': '💙',
+            '无感': '💚', '不太喜欢': '💜', '讨厌': '⚫'
+        };
+        
+        let currentLang = localStorage.getItem('lang') || 'zh';
+        
+        function t(key) {
+            return (i18n[currentLang] && i18n[currentLang][key]) || i18n.zh[key] || key;
+        }
+        
+        // 根据当前语言返回角色名
+        function charName(char) {
+            if (!char) return '';
+            if (currentLang === 'en') return char.nameEn || char.name;
+            if (currentLang === 'ja') return char.nameJa || char.name;
+            return char.name;
+        }
+        
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : (lang === 'ja' ? 'ja' : 'en');
+            document.title = t('home.title');
+            
+            // 切换按钮高亮
+            document.getElementById('langZh').classList.toggle('active', lang === 'zh');
+            document.getElementById('langEn').classList.toggle('active', lang === 'en');
+            document.getElementById('langJa').classList.toggle('active', lang === 'ja');
+            
+            // 替换所有带 data-i18n 的静态文本
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            
+            // 设置 input/textarea 的 placeholder
+            document.getElementById('evalFiller').placeholder = t('common.fillerPlaceholder');
+            document.getElementById('cpFiller').placeholder = t('common.fillerPlaceholder');
+            document.getElementById('evalTextInput').placeholder = t('eval.modalPlaceholder');
+            
+            // 重渲染动态内容
+            applyLikeLabels();
+            initCPSelects();
+            renderCPList();
+            renderCPDiagram();
+            updateEvalTableFooter();
+            renderEvalGrid();
+            renderRandomHistory();
+            // 若已有抽取结果，重渲染以更新角色名
+            if (currentRandomPair) {
+                renderRandomPair(currentRandomPair.charA, currentRandomPair.charB, false);
+            }
+        }
+        
+        // 应用喜好程度按钮文案
+        function applyLikeLabels() {
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                const level = btn.dataset.level;
+                btn.textContent = `${likeEmojis[level]} ${t('like.' + level)}`;
+            });
+        }
+        
         // 预置角色数据（将国之天鹰星角色）
         const characters = [
-            { id: 1, name: '大将军', avatar: 'https://pic1.imgdb.cn/item/6a24f028d71dee7c9418b461.jpg' },
-            { id: 2, name: '玛法穆特', avatar: 'https://pic1.imgdb.cn/item/6a24f13dd71dee7c9418b48b.jpg' },
-            { id: 3, name: '扎加诺斯', avatar: 'https://pic1.imgdb.cn/item/6a24fc85d71dee7c9418dc5f.jpg' },
-            { id: 4, name: '卡利将军', avatar: 'https://pic1.imgdb.cn/item/6a24fc9bd71dee7c9418dc60.jpg' },
-            { id: 5, name: '萨尔迦', avatar: 'https://pic1.imgdb.cn/item/6a24fcadd71dee7c9418dc65.jpg' },
-            { id: 6, name: '库鲁特', avatar: 'https://pic1.imgdb.cn/item/6a24fccad71dee7c9418dc6b.jpg' },
-            { id: 7, name: '泽基', avatar: 'https://pic1.imgdb.cn/item/6a24fcdfd71dee7c9418dc73.jpg' },
-            { id: 8, name: '努尔赞', avatar: 'https://pic1.imgdb.cn/item/6a24fcecd71dee7c9418dc74.jpg' },
-            { id: 9, name: '伊尔凯', avatar: 'https://pic1.imgdb.cn/item/6a24fcf6d71dee7c9418dc78.jpg' },
-            { id: 10, name: '杰米尔', avatar: 'https://pic1.imgdb.cn/item/6a24fd03d71dee7c9418dc7c.jpg' },
-            { id: 11, name: '艾哈迈德', avatar: 'https://pic1.imgdb.cn/item/6a24fd15d71dee7c9418dc81.jpg' },
-            { id: 12, name: '易卜拉欣', avatar: 'https://pic1.imgdb.cn/item/6a24fd26d71dee7c9418dc85.jpg' },
-            { id: 13, name: '苏莱曼', avatar: 'https://pic1.imgdb.cn/item/6a24fd32d71dee7c9418dc89.jpg' },
-            { id: 14, name: '莎拉', avatar: 'https://pic1.imgdb.cn/item/6a24fd3ed71dee7c9418dc8e.jpg' },
-            { id: 15, name: '罗克塞拉娜', avatar: 'https://pic1.imgdb.cn/item/6a24fd4bd71dee7c9418dc92.jpg' },
-            { id: 16, name: '可可', avatar: 'https://pic1.imgdb.cn/item/6a24fd56d71dee7c9418dc97.jpg' },
-            { id: 17, name: '柯兰', avatar: 'https://pic1.imgdb.cn/item/6a24fd64d71dee7c9418dc9e.jpg' },
-            { id: 18, name: '巴拉班', avatar: 'https://pic1.imgdb.cn/item/6a24fd7bd71dee7c9418dca3.jpg' },
-            { id: 19, name: '巴耶济德', avatar: 'https://pic1.imgdb.cn/item/6a24fd86d71dee7c9418dca9.jpg' },
-            { id: 20, name: '爱榭', avatar: 'https://pic1.imgdb.cn/item/6a24fd92d71dee7c9418dcad.jpg' },
-            { id: 21, name: '法特玛', avatar: 'https://pic1.imgdb.cn/item/6a24fd9cd71dee7c9418dcb0.jpg' },
-            { id: 22, name: '凯末尔', avatar: 'https://pic1.imgdb.cn/item/6a24fda9d71dee7c9418dcb6.jpg' },
-            { id: 23, name: '奥尔罕', avatar: 'https://pic1.imgdb.cn/item/6a24fdb3d71dee7c9418dcbb.jpg' },
-            { id: 24, name: '塞里姆', avatar: 'https://pic1.imgdb.cn/item/6a24fdc6d71dee7c9418dcc2.jpg' },
-            { id: 25, name: '伊斯梅尔', avatar: 'https://pic1.imgdb.cn/item/6a24fdd5d71dee7c9418dcc7.jpg' },
-            { id: 26, name: '乌尊', avatar: 'https://pic1.imgdb.cn/item/6a24fde6d71dee7c9418dcce.jpg' },
-            { id: 27, name: '灯塔之都市长', avatar: 'https://pic1.imgdb.cn/item/6a24fe5dd71dee7c9418dce3.jpg' },
-            { id: 28, name: '裘洛斯', avatar: 'https://pic1.imgdb.cn/item/6a24fe68d71dee7c9418dce4.jpg' },
-            { id: 29, name: '康士坦丁', avatar: 'https://pic1.imgdb.cn/item/6a24fe77d71dee7c9418dce5.jpg' },
-            { id: 30, name: '泽农', avatar: 'https://pic1.imgdb.cn/item/6a24fe8fd71dee7c9418dce9.jpg' },
-            { id: 31, name: '尼基弗鲁斯', avatar: 'https://pic1.imgdb.cn/item/6a24fe9bd71dee7c9418dcea.jpg' },
-            { id: 32, name: '安东尼奥·卢西奥', avatar: 'https://pic1.imgdb.cn/item/6a24fea8d71dee7c9418dceb.jpg' },
-            { id: 33, name: '阿比利戈', avatar: 'https://pic1.imgdb.cn/item/6a24febbd71dee7c9418dcec.jpg' },
-            { id: 34, name: '西尔维斯特罗·布雷加', avatar: 'https://pic1.imgdb.cn/item/6a24fef7d71dee7c9418dcf3.jpg' },
-            { id: 35, name: '切奇丽亚', avatar: 'https://pic1.imgdb.cn/item/6a24ff03d71dee7c9418dcf7.jpg' },
-            { id: 36, name: '基诺·博卡内格拉', avatar: 'https://pic1.imgdb.cn/item/6a24ff7bd71dee7c9418dd03.jpg' },
-            { id: 37, name: '阿马德奥·博卡内格拉', avatar: 'https://pic1.imgdb.cn/item/6a24ff87d71dee7c9418dd05.jpg' },
-            { id: 38, name: '罗尼·博卡内格拉', avatar: 'https://pic1.imgdb.cn/item/6a24ff93d71dee7c9418dd06.jpg' },
-            { id: 39, name: '多纳泰罗·多里亚', avatar: 'https://pic1.imgdb.cn/item/6a24ff9dd71dee7c9418dd07.jpg' },
-            { id: 40, name: '妮琪', avatar: 'https://pic1.imgdb.cn/item/6a24ffadd71dee7c9418dd08.jpg' },
-            { id: 41, name: '王大人', avatar: 'https://pic1.imgdb.cn/item/6a24ffb9d71dee7c9418dd0b.jpg' },
-            { id: 42, name: '齐格蒙德三世', avatar: 'https://pic1.imgdb.cn/item/6a24ffcad71dee7c9418dd0e.jpg' },
-            { id: 43, name: '玛尔吉特', avatar: 'https://pic1.imgdb.cn/item/6a250015d71dee7c9418dd14.jpg' },
-            { id: 44, name: '格特鲁德', avatar: 'https://pic1.imgdb.cn/item/6a250032d71dee7c9418dd18.jpg' },
-            { id: 45, name: '卡塔丽娜', avatar: 'https://pic1.imgdb.cn/item/6a250058d71dee7c9418dd1f.jpg' },
-            { id: 46, name: '雅各布', avatar: 'https://pic1.imgdb.cn/item/6a250090d71dee7c9418dd22.jpg' },
-            { id: 47, name: '陶罗斯双子市长', avatar: 'https://pic1.imgdb.cn/item/6a25009ad71dee7c9418dd23.jpg' },
-            { id: 48, name: '埃尔巴赫', avatar: 'https://pic1.imgdb.cn/item/6a2500abd71dee7c9418dd25.jpg' },
-            { id: 49, name: '布丽吉塔', avatar: 'https://pic1.imgdb.cn/item/6a2500b8d71dee7c9418dd28.jpg' },
-            { id: 50, name: '卡尔巴哈尔', avatar: 'https://pic1.imgdb.cn/item/6a2500c7d71dee7c9418dd29.jpg' },
-            { id: 51, name: '卡珊德拉', avatar: 'https://pic1.imgdb.cn/item/6a2500d4d71dee7c9418dd2b.jpg' },
-            { id: 52, name: '巴斯克', avatar: 'https://pic1.imgdb.cn/item/6a2500e5d71dee7c9418dd2c.jpg' },
-            { id: 53, name: '布兰卡', avatar: 'https://pic1.imgdb.cn/item/6a25014dd71dee7c9418dd3c.jpg' },
-            { id: 54, name: '埃蒙斯坦', avatar: 'https://pic1.imgdb.cn/item/6a25015cd71dee7c9418dd3e.jpg' },
-            { id: 55, name: '巴特莱茵皇帝', avatar: 'https://pic1.imgdb.cn/item/6a250136d71dee7c9418dd34.jpg' },
-            { id: 56, name: '列列德里库', avatar: 'https://pic1.imgdb.cn/item/6a250371d71dee7c9418dd8b.jpg' },
-            { id: 57, name: '古拉拉托', avatar: 'https://pic1.imgdb.cn/item/6a25019ed71dee7c9418dd45.jpg' },
-            { id: 58, name: '路易', avatar: 'https://pic1.imgdb.cn/item/6a2501b7d71dee7c9418dd47.jpg' },
-            { id: 59, name: '西蒙', avatar: 'https://pic1.imgdb.cn/item/6a2501c3d71dee7c9418dd48.jpg' },
-            { id: 60, name: '尼克罗', avatar: 'https://pic1.imgdb.cn/item/6a2501ced71dee7c9418dd4a.jpg' },
-            { id: 61, name: '皮诺', avatar: 'https://pic1.imgdb.cn/item/6a2501dbd71dee7c9418dd4c.jpg' },
-            { id: 62, name: '莉莉', avatar: 'https://pic1.imgdb.cn/item/6a2501fcd71dee7c9418dd4d.jpg' },
-            { id: 63, name: '弗伦岑', avatar: 'https://pic1.imgdb.cn/item/6a250206d71dee7c9418dd4f.jpg' },
-            { id: 64, name: '亚当', avatar: 'https://pic1.imgdb.cn/item/6a250212d71dee7c9418dd51.jpg' },
-            { id: 65, name: '维希特', avatar: 'https://pic1.imgdb.cn/item/6a250230d71dee7c9418dd59.jpg' },
-            { id: 66, name: '托特', avatar: 'https://pic1.imgdb.cn/item/6a250e38d71dee7c94190666.jpg' },
-            { id: 67, name: '温克尔曼', avatar: 'https://pic1.imgdb.cn/item/6a25023cd71dee7c9418dd5c.jpg' },
-            { id: 68, name: '基尔伯特', avatar: 'https://pic1.imgdb.cn/item/6a250248d71dee7c9418dd5e.jpg' },
-            { id: 69, name: '史密特', avatar: 'https://pic1.imgdb.cn/item/6a250255d71dee7c9418dd60.jpg' },
-            { id: 70, name: '罗伊斯', avatar: 'https://pic1.imgdb.cn/item/6a250261d71dee7c9418dd61.jpg' },
-            { id: 71, name: '克劳斯', avatar: 'https://pic1.imgdb.cn/item/6a25026ed71dee7c9418dd62.jpg' },
-            { id: 72, name: '丹尼尔', avatar: 'https://pic1.imgdb.cn/item/6a250329d71dee7c9418dd80.jpg' },
-            { id: 73, name: '科莉尼亚', avatar: 'https://pic1.imgdb.cn/item/6a25031dd71dee7c9418dd7d.jpg' },
-            { id: 74, name: '克里斯托弗', avatar: 'https://pic1.imgdb.cn/item/6a250305d71dee7c9418dd7b.jpg' },
-            { id: 75, name: '巴雷', avatar: 'https://pic1.imgdb.cn/item/6a2502f5d71dee7c9418dd77.jpg' },
-            { id: 76, name: '寇伯特', avatar: 'https://pic1.imgdb.cn/item/6a2502ead71dee7c9418dd74.jpg' },
-            { id: 77, name: '埃莉诺', avatar: 'https://pic1.imgdb.cn/item/6a250d01d71dee7c94190659.jpg' },
-            { id: 78, name: '特奥安德罗什', avatar: 'https://pic1.imgdb.cn/item/6a2502d1d71dee7c9418dd6d.jpg' },
-            { id: 79, name: '瑞恩', avatar: 'https://pic1.imgdb.cn/item/6a2502c4d71dee7c9418dd6a.jpg' },
-            { id: 80, name: '吹雪之町伯爵', avatar: 'https://pic1.imgdb.cn/item/6a2502b6d71dee7c9418dd69.jpg' },
-            { id: 81, name: '雅克', avatar: 'https://pic1.imgdb.cn/item/6a2502a9d71dee7c9418dd67.jpg' },
-            { id: 82, name: '西格弗里', avatar: 'https://pic1.imgdb.cn/item/6a250297d71dee7c9418dd65.jpg' },
-            { id: 83, name: '伊斯坎达尔', avatar: '', emoji: '🦅', isAnimal: true },
-            { id: 84, name: '赤髭', avatar: '', emoji: '🐯', isAnimal: true }
+            { id: 1, name: '大将军', nameEn: 'Grand Vizier', nameJa: '大宰相', avatar: 'https://pic1.imgdb.cn/item/6a24f028d71dee7c9418b461.jpg' },
+            { id: 2, name: '玛法穆特', nameEn: 'Mahmud', nameJa: 'マフムート', avatar: 'https://pic1.imgdb.cn/item/6a24f13dd71dee7c9418b48b.jpg' },
+            { id: 3, name: '扎加诺斯', nameEn: 'Zaganos', nameJa: 'ザガノス', avatar: 'https://pic1.imgdb.cn/item/6a24fc85d71dee7c9418dc5f.jpg' },
+            { id: 4, name: '卡利将军', nameEn: 'General Kali', nameJa: 'カリ将軍', avatar: 'https://pic1.imgdb.cn/item/6a24fc9bd71dee7c9418dc60.jpg' },
+            { id: 5, name: '萨尔迦', nameEn: 'Sarga', nameJa: 'サルジャ', avatar: 'https://pic1.imgdb.cn/item/6a24fcadd71dee7c9418dc65.jpg' },
+            { id: 6, name: '库鲁特', nameEn: 'Kurd', nameJa: 'クルット', avatar: 'https://pic1.imgdb.cn/item/6a24fccad71dee7c9418dc6b.jpg' },
+            { id: 7, name: '泽基', nameEn: 'Zeki', nameJa: 'ゼキ', avatar: 'https://pic1.imgdb.cn/item/6a24fcdfd71dee7c9418dc73.jpg' },
+            { id: 8, name: '努尔赞', nameEn: 'Nurzan', nameJa: 'ヌルザン', avatar: 'https://pic1.imgdb.cn/item/6a24fcecd71dee7c9418dc74.jpg' },
+            { id: 9, name: '伊尔凯', nameEn: 'Ilkay', nameJa: 'イルカイ', avatar: 'https://pic1.imgdb.cn/item/6a24fcf6d71dee7c9418dc78.jpg' },
+            { id: 10, name: '杰米尔', nameEn: 'Cemil', nameJa: 'ジェミル', avatar: 'https://pic1.imgdb.cn/item/6a24fd03d71dee7c9418dc7c.jpg' },
+            { id: 11, name: '艾哈迈德', nameEn: 'Ahmet', nameJa: 'アフメット', avatar: 'https://pic1.imgdb.cn/item/6a24fd15d71dee7c9418dc81.jpg' },
+            { id: 12, name: '易卜拉欣', nameEn: 'Ibrahim', nameJa: 'イブラヒム', avatar: 'https://pic1.imgdb.cn/item/6a24fd26d71dee7c9418dc85.jpg' },
+            { id: 13, name: '苏莱曼', nameEn: 'Suleiman', nameJa: 'スレイマン', avatar: 'https://pic1.imgdb.cn/item/6a24fd32d71dee7c9418dc89.jpg' },
+            { id: 14, name: '莎拉', nameEn: 'Sara', nameJa: 'サラ', avatar: 'https://pic1.imgdb.cn/item/6a24fd3ed71dee7c9418dc8e.jpg' },
+            { id: 15, name: '罗克塞拉娜', nameEn: 'Roxelana', nameJa: 'ロクセラーナ', avatar: 'https://pic1.imgdb.cn/item/6a24fd4bd71dee7c9418dc92.jpg' },
+            { id: 16, name: '可可', nameEn: 'Coco', nameJa: 'ココ', avatar: 'https://pic1.imgdb.cn/item/6a24fd56d71dee7c9418dc97.jpg' },
+            { id: 17, name: '柯兰', nameEn: 'Koran', nameJa: 'コーラン', avatar: 'https://pic1.imgdb.cn/item/6a24fd64d71dee7c9418dc9e.jpg' },
+            { id: 18, name: '巴拉班', nameEn: 'Balaban', nameJa: 'バラバン', avatar: 'https://pic1.imgdb.cn/item/6a24fd7bd71dee7c9418dca3.jpg' },
+            { id: 19, name: '巴耶济德', nameEn: 'Bayezid', nameJa: 'バヤズィト', avatar: 'https://pic1.imgdb.cn/item/6a24fd86d71dee7c9418dca9.jpg' },
+            { id: 20, name: '爱榭', nameEn: 'Eshe', nameJa: 'エシェ', avatar: 'https://pic1.imgdb.cn/item/6a24fd92d71dee7c9418dcad.jpg' },
+            { id: 21, name: '法特玛', nameEn: 'Fatma', nameJa: 'ファトマ', avatar: 'https://pic1.imgdb.cn/item/6a24fd9cd71dee7c9418dcb0.jpg' },
+            { id: 22, name: '凯末尔', nameEn: 'Kemal', nameJa: 'ケマル', avatar: 'https://pic1.imgdb.cn/item/6a24fda9d71dee7c9418dcb6.jpg' },
+            { id: 23, name: '奥尔罕', nameEn: 'Orhan', nameJa: 'オルハン', avatar: 'https://pic1.imgdb.cn/item/6a24fdb3d71dee7c9418dcbb.jpg' },
+            { id: 24, name: '塞里姆', nameEn: 'Selim', nameJa: 'セリム', avatar: 'https://pic1.imgdb.cn/item/6a24fdc6d71dee7c9418dcc2.jpg' },
+            { id: 25, name: '伊斯梅尔', nameEn: 'Ismail', nameJa: 'イスマイル', avatar: 'https://pic1.imgdb.cn/item/6a24fdd5d71dee7c9418dcc7.jpg' },
+            { id: 26, name: '乌尊', nameEn: 'Uzun', nameJa: 'ウズン', avatar: 'https://pic1.imgdb.cn/item/6a24fde6d71dee7c9418dcce.jpg' },
+            { id: 27, name: '灯塔之都市长', nameEn: 'Mayor of Lighthouse City', nameJa: '灯台都市長', avatar: 'https://pic1.imgdb.cn/item/6a24fe5dd71dee7c9418dce3.jpg' },
+            { id: 28, name: '裘洛斯', nameEn: 'Juros', nameJa: 'ジュロス', avatar: 'https://pic1.imgdb.cn/item/6a24fe68d71dee7c9418dce4.jpg' },
+            { id: 29, name: '康士坦丁', nameEn: 'Constantine', nameJa: 'コンスタンティノス', avatar: 'https://pic1.imgdb.cn/item/6a24fe77d71dee7c9418dce5.jpg' },
+            { id: 30, name: '泽农', nameEn: 'Zenon', nameJa: 'ゼノン', avatar: 'https://pic1.imgdb.cn/item/6a24fe8fd71dee7c9418dce9.jpg' },
+            { id: 31, name: '尼基弗鲁斯', nameEn: 'Nikephoros', nameJa: 'ニケフォロス', avatar: 'https://pic1.imgdb.cn/item/6a24fe9bd71dee7c9418dcea.jpg' },
+            { id: 32, name: '安东尼奥·卢西奥', nameEn: 'Antonio Lucio', nameJa: 'アントニオ・ルチオ', avatar: 'https://pic1.imgdb.cn/item/6a24fea8d71dee7c9418dceb.jpg' },
+            { id: 33, name: '阿比利戈', nameEn: 'Abiligo', nameJa: 'アビリゴ', avatar: 'https://pic1.imgdb.cn/item/6a24febbd71dee7c9418dcec.jpg' },
+            { id: 34, name: '西尔维斯特罗·布雷加', nameEn: 'Silvestro Brega', nameJa: 'シルヴェストロ・ブレガ', avatar: 'https://pic1.imgdb.cn/item/6a24fef7d71dee7c9418dcf3.jpg' },
+            { id: 35, name: '切奇丽亚', nameEn: 'Cecilia', nameJa: 'チェチリア', avatar: 'https://pic1.imgdb.cn/item/6a24ff03d71dee7c9418dcf7.jpg' },
+            { id: 36, name: '基诺·博卡内格拉', nameEn: 'Gino Bocanegra', nameJa: 'ジーノ・ボカネグラ', avatar: 'https://pic1.imgdb.cn/item/6a24ff7bd71dee7c9418dd03.jpg' },
+            { id: 37, name: '阿马德奥·博卡内格拉', nameEn: 'Amedeo Bocanegra', nameJa: 'アマデオ・ボカネグラ', avatar: 'https://pic1.imgdb.cn/item/6a24ff87d71dee7c9418dd05.jpg' },
+            { id: 38, name: '罗尼·博卡内格拉', nameEn: 'Roni Bocanegra', nameJa: 'ロニ・ボカネグラ', avatar: 'https://pic1.imgdb.cn/item/6a24ff93d71dee7c9418dd06.jpg' },
+            { id: 39, name: '多纳泰罗·多里亚', nameEn: 'Donatello Doria', nameJa: 'ドナテッロ・ドーリア', avatar: 'https://pic1.imgdb.cn/item/6a24ff9dd71dee7c9418dd07.jpg' },
+            { id: 40, name: '妮琪', nameEn: 'Niki', nameJa: 'ニキ', avatar: 'https://pic1.imgdb.cn/item/6a24ffadd71dee7c9418dd08.jpg' },
+            { id: 41, name: '王大人', nameEn: 'Lord Wang', nameJa: '王大人', avatar: 'https://pic1.imgdb.cn/item/6a24ffb9d71dee7c9418dd0b.jpg' },
+            { id: 42, name: '齐格蒙德三世', nameEn: 'Sigismund III', nameJa: 'ジギスムント三世', avatar: 'https://pic1.imgdb.cn/item/6a24ffcad71dee7c9418dd0e.jpg' },
+            { id: 43, name: '玛尔吉特', nameEn: 'Margit', nameJa: 'マルギット', avatar: 'https://pic1.imgdb.cn/item/6a250015d71dee7c9418dd14.jpg' },
+            { id: 44, name: '格特鲁德', nameEn: 'Gertrud', nameJa: 'ゲルトルート', avatar: 'https://pic1.imgdb.cn/item/6a250032d71dee7c9418dd18.jpg' },
+            { id: 45, name: '卡塔丽娜', nameEn: 'Katarina', nameJa: 'カタリーナ', avatar: 'https://pic1.imgdb.cn/item/6a250058d71dee7c9418dd1f.jpg' },
+            { id: 46, name: '雅各布', nameEn: 'Jakob', nameJa: 'ヤーコプ', avatar: 'https://pic1.imgdb.cn/item/6a250090d71dee7c9418dd22.jpg' },
+            { id: 47, name: '陶罗斯双子市长', nameEn: 'Mayors of Tauros', nameJa: 'タウロス双子市長', avatar: 'https://pic1.imgdb.cn/item/6a25009ad71dee7c9418dd23.jpg' },
+            { id: 48, name: '埃尔巴赫', nameEn: 'Erbach', nameJa: 'エルバッハ', avatar: 'https://pic1.imgdb.cn/item/6a2500abd71dee7c9418dd25.jpg' },
+            { id: 49, name: '布丽吉塔', nameEn: 'Brigitta', nameJa: 'ブリギッタ', avatar: 'https://pic1.imgdb.cn/item/6a2500b8d71dee7c9418dd28.jpg' },
+            { id: 50, name: '卡尔巴哈尔', nameEn: 'Karbahar', nameJa: 'カルバハル', avatar: 'https://pic1.imgdb.cn/item/6a2500c7d71dee7c9418dd29.jpg' },
+            { id: 51, name: '卡珊德拉', nameEn: 'Cassandra', nameJa: 'カッサンドラ', avatar: 'https://pic1.imgdb.cn/item/6a2500d4d71dee7c9418dd2b.jpg' },
+            { id: 52, name: '巴斯克', nameEn: 'Basque', nameJa: 'バスク', avatar: 'https://pic1.imgdb.cn/item/6a2500e5d71dee7c9418dd2c.jpg' },
+            { id: 53, name: '布兰卡', nameEn: 'Blanca', nameJa: 'ブランカ', avatar: 'https://pic1.imgdb.cn/item/6a25014dd71dee7c9418dd3c.jpg' },
+            { id: 54, name: '埃蒙斯坦', nameEn: 'Emonstan', nameJa: 'エモンスタイン', avatar: 'https://pic1.imgdb.cn/item/6a25015cd71dee7c9418dd3e.jpg' },
+            { id: 55, name: '巴特莱茵皇帝', nameEn: 'Emperor Bartlein', nameJa: 'バートライン皇帝', avatar: 'https://pic1.imgdb.cn/item/6a250136d71dee7c9418dd34.jpg' },
+            { id: 56, name: '列列德里库', nameEn: 'Leledric', nameJa: 'レレドリク', avatar: 'https://pic1.imgdb.cn/item/6a250371d71dee7c9418dd8b.jpg' },
+            { id: 57, name: '古拉拉托', nameEn: 'Gurarato', nameJa: 'グララート', avatar: 'https://pic1.imgdb.cn/item/6a25019ed71dee7c9418dd45.jpg' },
+            { id: 58, name: '路易', nameEn: 'Louis', nameJa: 'ルイ', avatar: 'https://pic1.imgdb.cn/item/6a2501b7d71dee7c9418dd47.jpg' },
+            { id: 59, name: '西蒙', nameEn: 'Simon', nameJa: 'シモン', avatar: 'https://pic1.imgdb.cn/item/6a2501c3d71dee7c9418dd48.jpg' },
+            { id: 60, name: '尼克罗', nameEn: 'Niccolo', nameJa: 'ニッコロ', avatar: 'https://pic1.imgdb.cn/item/6a2501ced71dee7c9418dd4a.jpg' },
+            { id: 61, name: '皮诺', nameEn: 'Pino', nameJa: 'ピノ', avatar: 'https://pic1.imgdb.cn/item/6a2501dbd71dee7c9418dd4c.jpg' },
+            { id: 62, name: '莉莉', nameEn: 'Lily', nameJa: 'リリ', avatar: 'https://pic1.imgdb.cn/item/6a2501fcd71dee7c9418dd4d.jpg' },
+            { id: 63, name: '弗伦岑', nameEn: 'Frenzen', nameJa: 'フレンツェン', avatar: 'https://pic1.imgdb.cn/item/6a250206d71dee7c9418dd4f.jpg' },
+            { id: 64, name: '亚当', nameEn: 'Adam', nameJa: 'アダム', avatar: 'https://pic1.imgdb.cn/item/6a250212d71dee7c9418dd51.jpg' },
+            { id: 65, name: '维希特', nameEn: 'Wicht', nameJa: 'ヴィヒト', avatar: 'https://pic1.imgdb.cn/item/6a250230d71dee7c9418dd59.jpg' },
+            { id: 66, name: '托特', nameEn: 'Todt', nameJa: 'トート', avatar: 'https://pic1.imgdb.cn/item/6a250e38d71dee7c94190666.jpg' },
+            { id: 67, name: '温克尔曼', nameEn: 'Winkelmann', nameJa: 'ヴィンケルマン', avatar: 'https://pic1.imgdb.cn/item/6a25023cd71dee7c9418dd5c.jpg' },
+            { id: 68, name: '基尔伯特', nameEn: 'Gilbert', nameJa: 'ギルベルト', avatar: 'https://pic1.imgdb.cn/item/6a250248d71dee7c9418dd5e.jpg' },
+            { id: 69, name: '史密特', nameEn: 'Schmidt', nameJa: 'シュミット', avatar: 'https://pic1.imgdb.cn/item/6a250255d71dee7c9418dd60.jpg' },
+            { id: 70, name: '罗伊斯', nameEn: 'Royce', nameJa: 'ロイス', avatar: 'https://pic1.imgdb.cn/item/6a250261d71dee7c9418dd61.jpg' },
+            { id: 71, name: '克劳斯', nameEn: 'Klaus', nameJa: 'クラウス', avatar: 'https://pic1.imgdb.cn/item/6a25026ed71dee7c9418dd62.jpg' },
+            { id: 72, name: '丹尼尔', nameEn: 'Daniel', nameJa: 'ダニエル', avatar: 'https://pic1.imgdb.cn/item/6a250329d71dee7c9418dd80.jpg' },
+            { id: 73, name: '科莉尼亚', nameEn: 'Corinna', nameJa: 'コリンナ', avatar: 'https://pic1.imgdb.cn/item/6a25031dd71dee7c9418dd7d.jpg' },
+            { id: 74, name: '克里斯托弗', nameEn: 'Christoph', nameJa: 'クリストフ', avatar: 'https://pic1.imgdb.cn/item/6a250305d71dee7c9418dd7b.jpg' },
+            { id: 75, name: '巴雷', nameEn: 'Barre', nameJa: 'バレ', avatar: 'https://pic1.imgdb.cn/item/6a2502f5d71dee7c9418dd77.jpg' },
+            { id: 76, name: '寇伯特', nameEn: 'Kobold', nameJa: 'コボルト', avatar: 'https://pic1.imgdb.cn/item/6a2502ead71dee7c9418dd74.jpg' },
+            { id: 77, name: '埃莉诺', nameEn: 'Eleanor', nameJa: 'エレオノール', avatar: 'https://pic1.imgdb.cn/item/6a250d01d71dee7c94190659.jpg' },
+            { id: 78, name: '特奥安德罗什', nameEn: 'Theodandros', nameJa: 'テオアンドロス', avatar: 'https://pic1.imgdb.cn/item/6a2502d1d71dee7c9418dd6d.jpg' },
+            { id: 79, name: '瑞恩', nameEn: 'Ryan', nameJa: 'ライン', avatar: 'https://pic1.imgdb.cn/item/6a2502c4d71dee7c9418dd6a.jpg' },
+            { id: 80, name: '吹雪之町伯爵', nameEn: 'Count of Fubuki', nameJa: '吹雪の町伯爵', avatar: 'https://pic1.imgdb.cn/item/6a2502b6d71dee7c9418dd69.jpg' },
+            { id: 81, name: '雅克', nameEn: 'Jacques', nameJa: 'ジャック', avatar: 'https://pic1.imgdb.cn/item/6a2502a9d71dee7c9418dd67.jpg' },
+            { id: 82, name: '西格弗里', nameEn: 'Siegfried', nameJa: 'ジークフリート', avatar: 'https://pic1.imgdb.cn/item/6a250297d71dee7c9418dd65.jpg' },
+            { id: 83, name: '伊斯坎达尔', nameEn: 'Iskandar', nameJa: 'イスカンダル', avatar: '', emoji: '🦅', isAnimal: true },
+            { id: 84, name: '赤髭', nameEn: 'Red Beard', nameJa: '赤髭', avatar: '', emoji: '🐯', isAnimal: true }
         ];
         // 评价数据
         const evaluations = {};
@@ -1163,7 +1473,7 @@
         const controversialChars = ['吹雪之町伯爵'];
         const highFreqChars = ['玛法穆特', '扎加诺斯', '萨尔迦', '泽基', '努尔赞', '苏莱曼', '巴拉班', '巴耶济德', '奥尔罕', '伊斯梅尔', '康士坦丁', '尼基弗鲁斯', '安东尼奥·卢西奥', '阿比利戈', '妮琪', '玛尔吉特', '卡塔丽娜', '埃尔巴赫', '布丽吉塔', '卡尔巴哈尔', '卡珊德拉', '古拉拉托', '列列德里库', '路易', '西蒙', '莉莉', '弗伦岑'];
         // Mob（路人）角色
-        const mobCharacter = { id: 999, name: 'Mob（路人）', avatar: '', emoji: '🧑‍🌾', isMob: true };
+        const mobCharacter = { id: 999, name: 'Mob（路人）', nameEn: 'Mob', nameJa: 'Mob（モブ）', avatar: '', emoji: '🧑‍🌾', isMob: true };
         
         // 当前编辑的角色
         let currentEditChar = null;
@@ -1190,13 +1500,13 @@
             if (char.emoji && !char.avatar) {
                 return `<div class="emoji-avatar">${char.emoji}</div>`;
             }
-            return `<img src="${char.avatar}" alt="${char.name}" crossorigin="anonymous">`;
+            return `<img src="${char.avatar}" alt="${charName(char)}" crossorigin="anonymous">`;
         }
         // 初始化
         function init() {
+            // 先应用语言（会重渲染各动态区域）
+            setLanguage(currentLang);
             renderEvalGrid();
-            initCPSelects();
-            renderRandomHistory();
         }
         
         // 页面切换
@@ -1222,7 +1532,7 @@
                     <div class="eval-card ${eval.level ? 'has-level' : ''}" data-level="${eval.level || ''}" onclick="openEvalModal(${char.id})">
                         ${avatarHTML(char)}
                         <div class="char-info">
-                            <div class="char-name">${char.name}</div>
+                            <div class="char-name">${charName(char)}</div>
                             <div class="char-eval">${eval.text || ''}</div>
                         </div>
                     </div>
@@ -1232,14 +1542,14 @@
         
         // 初始化CP下拉框
         function initCPSelects() {
-            const options = '<option value="">请选择</option>' + 
-                characters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const options = `<option value="">${t('common.selectPlaceholder')}</option>` + 
+                characters.map(c => `<option value="${c.id}">${charName(c)}</option>`).join('');
             
             document.getElementById('cpCharA').innerHTML = options;
             document.getElementById('cpCharB').innerHTML = options;
             
             const relationOptions = Object.keys(relationTypes).map(r => 
-                `<option value="${r}">${r}</option>`
+                `<option value="${r}">${relationLabel(r)}</option>`
             ).join('');
             document.getElementById('cpRelation').innerHTML = relationOptions;
         }
@@ -1250,7 +1560,7 @@
             const eval = evaluations[charId] || {};
             
             document.getElementById('modalCharAvatar').innerHTML = avatarHTML(currentEditChar);
-            document.getElementById('modalCharName').textContent = currentEditChar.name;
+            document.getElementById('modalCharName').textContent = charName(currentEditChar);
             document.getElementById('evalTextInput').value = eval.text || '';
             document.getElementById('charCount').textContent = (eval.text || '').length;
             
@@ -1298,7 +1608,7 @@
         function updateEvalTableFooter() {
             const filler = document.getElementById('evalFiller').value || '______';
             document.getElementById('evalTableFooter').innerHTML = 
-                `制表人：Cupid011011<br>填表人：${filler}`;
+                `${t('eval.footerCreator')}<br>${t('eval.footerFiller')}${filler}`;
         }
         
         // 添加CP关系
@@ -1308,7 +1618,7 @@
             const relation = document.getElementById('cpRelation').value;
             
             if (!charAId || !charBId || !relation) {
-                alert('请完整选择角色和关系');
+                alert(t('cp.alertIncomplete'));
                 return;
             }
             
@@ -1334,7 +1644,7 @@
             const container = document.getElementById('cpListContent');
             
             if (cpRelations.length === 0) {
-                container.innerHTML = '<div class="empty-cp">暂无连线关系</div>';
+                container.innerHTML = `<div class="empty-cp">${t('cp.noConnections')}</div>`;
                 return;
             }
             
@@ -1347,10 +1657,10 @@
                         <div class="cp-item-info">
                             ${avatarHTML(charA)}
                             ${isSelfLoop ? '<span>⟳</span>' : '<span>↔</span>'}
-                            <span class="relation-tag" data-level="${cp.relation}">${cp.relation}</span>
-                            ${!isSelfLoop ? `${avatarHTML(charB)}<span>${charA.name} ↔ ${charB.name}</span>` : `<span>${charA.name}（自环）</span>`}
+                            <span class="relation-tag" data-level="${cp.relation}">${relationLabel(cp.relation)}</span>
+                            ${!isSelfLoop ? `${avatarHTML(charB)}<span>${charName(charA)} ↔ ${charName(charB)}</span>` : `<span>${charName(charA)}${t('cp.selfLoop')}</span>`}
                         </div>
-                        <button class="delete-cp-btn" onclick="deleteCP(${index})">删除</button>
+                        <button class="delete-cp-btn" onclick="deleteCP(${index})">${t('cp.delete')}</button>
                     </div>
                 `;
             }).join('');
@@ -1479,7 +1789,7 @@
                 div.style.top = y + 'px';
                 div.innerHTML = `
                     ${avatarHTML(char)}
-                    <div class="char-name">${char.name}</div>
+                    <div class="char-name">${charName(char)}</div>
                 `;
                 canvas.appendChild(div);
             });
@@ -1487,7 +1797,7 @@
             // 更新表尾
             const filler = document.getElementById('cpFiller').value || '______';
             document.getElementById('cpDiagramFooter').innerHTML = 
-                `制表人：Cupid011011<br>填表人：${filler}`;
+                `${t('cp.footerCreator')}<br>${t('cp.footerFiller')}${filler}`;
         }
         
         // ===== 随机CP抽取器 =====
@@ -1531,7 +1841,7 @@
             const pool = buildDrawPool();
             const total = pool.length;
             if (total < 2) {
-                alert('当前筛选条件下角色不足，无法抽取');
+                alert(t('random.alertNotEnough'));
                 return null;
             }
             // 计算总可能组合数
@@ -1565,12 +1875,12 @@
                 <div class="random-pair">
                     <div class="${cls}" id="randCharA">
                         ${avatarHTML(charA)}
-                        <div class="random-char-name">${charA.name}</div>
+                        <div class="random-char-name">${charName(charA)}</div>
                     </div>
                     <div class="random-heart">×</div>
                     <div class="${cls}" id="randCharB">
                         ${avatarHTML(charB)}
-                        <div class="random-char-name">${charB.name}</div>
+                        <div class="random-char-name">${charName(charB)}</div>
                     </div>
                 </div>
             `;
@@ -1587,7 +1897,7 @@
             isDrawing = true;
             const drawBtn = document.getElementById('drawBtn');
             drawBtn.disabled = true;
-            drawBtn.textContent = '抽 取 中';
+            drawBtn.textContent = t('random.drawing');
             
             // 动画：从筛选后的角色池中快速滚动
             const pool = buildDrawPool();
@@ -1609,7 +1919,7 @@
                     // 恢复按钮
                     isDrawing = false;
                     drawBtn.disabled = false;
-                    drawBtn.textContent = '再 抽 一 次';
+                    drawBtn.textContent = t('random.drawAgain');
                     return;
                 }
                 // 滚动期间随机显示角色
@@ -1625,13 +1935,13 @@
         // 复制结果
         function copyCPResult() {
             if (!currentRandomPair) {
-                alert('请先抽取一对CP');
+                alert(t('random.alertFirst'));
                 return;
             }
-            const text = `${currentRandomPair.charA.name} × ${currentRandomPair.charB.name}`;
+            const text = `${charName(currentRandomPair.charA)} × ${charName(currentRandomPair.charB)}`;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
-                    alert('已复制：' + text);
+                    alert(t('random.alertCopied') + text);
                 }).catch(() => fallbackCopy(text));
             } else {
                 fallbackCopy(text);
@@ -1647,9 +1957,9 @@
             ta.select();
             try {
                 document.execCommand('copy');
-                alert('已复制：' + text);
+                alert(t('random.alertCopied') + text);
             } catch (e) {
-                alert('复制失败，请手动复制');
+                alert(t('random.alertCopyFail'));
             }
             document.body.removeChild(ta);
         }
@@ -1657,7 +1967,7 @@
         // 生成抽取结果图片
         async function generateRandomImage() {
             if (!currentRandomPair) {
-                alert('请先抽取一对CP');
+                alert(t('random.alertFirst'));
                 return;
             }
             const container = document.getElementById('randomResult');
@@ -1678,9 +1988,9 @@
                     windowWidth: container.scrollWidth,
                     windowHeight: container.scrollHeight
                 });
-                downloadImage(canvas, '随机CP.png');
+                downloadImage(canvas, t('random.filenameRandom'));
             } catch (err) {
-                alert('生成图片失败：' + err.message);
+                alert(t('common.alertGenFail') + err.message);
             }
         }
         
@@ -1727,7 +2037,7 @@
         // 判断角色是否为特殊类型并返回标签
         function specialTag(char) {
             if (char.isMob) return '<span class="tag-mob">Mob</span>';
-            if (char.isAnimal) return '<span class="tag-animal">动物</span>';
+            if (char.isAnimal) return `<span class="tag-animal">${t('random.animalTag')}</span>`;
             return '';
         }
         function renderRandomHistory() {
@@ -1735,7 +2045,7 @@
             const container = document.getElementById('randomHistoryList');
             if (!container) return;
             if (list.length === 0) {
-                container.innerHTML = '<div class="history-empty">暂无历史记录</div>';
+                container.innerHTML = `<div class="history-empty">${t('random.noHistory')}</div>`;
                 return;
             }
             container.innerHTML = list.map(item => {
@@ -1747,7 +2057,7 @@
                         ${avatarHTML(charA)}
                         <span style="color:#222; font-weight:300;">×</span>
                         ${avatarHTML(charB)}
-                        <div class="history-names">${charA.name}${specialTag(charA)} × ${charB.name}${specialTag(charB)}</div>
+                        <div class="history-names">${charName(charA)}${specialTag(charA)} × ${charName(charB)}${specialTag(charB)}</div>
                         <div class="history-time">${formatTime(item.time)}</div>
                     </div>
                 `;
@@ -1777,9 +2087,9 @@
                     windowWidth: container.scrollWidth,
                     windowHeight: container.scrollHeight
                 });
-                downloadImage(canvas, '角色印象表.png');
+                downloadImage(canvas, t('random.filenameEval'));
             } catch (err) {
-                alert('生成图片失败：' + err.message);
+                alert(t('common.alertGenFail') + err.message);
             }
         }
         
@@ -1806,9 +2116,9 @@
                     windowWidth: container.scrollWidth,
                     windowHeight: container.scrollHeight
                 });
-                downloadImage(canvas, 'CP关系连线图.png');
+                downloadImage(canvas, t('random.filenameCP'));
             } catch (err) {
-                alert('生成图片失败：' + err.message);
+                alert(t('common.alertGenFail') + err.message);
             }
         }
         
