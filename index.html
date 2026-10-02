@@ -810,6 +810,18 @@
             font-size: 52px;
             margin-bottom: 10px;
         }
+        /* 三角恋模式：三人头像缩小以适配 */
+        .random-result.is-triangle .random-char img,
+        .random-result.is-triangle .random-char .emoji-avatar {
+            width: 80px;
+            height: 80px;
+        }
+        .random-result.is-triangle .random-char .emoji-avatar {
+            font-size: 42px;
+        }
+        .random-result.is-triangle .random-pair {
+            gap: 8px;
+        }
         .history-item .emoji-avatar {
             width: 36px;
             height: 36px;
@@ -936,6 +948,21 @@
             }
             .random-heart {
                 font-size: 32px;
+            }
+            /* 移动端三角恋模式进一步缩小头像 */
+            .random-result.is-triangle .random-char img,
+            .random-result.is-triangle .random-char .emoji-avatar {
+                width: 64px;
+                height: 64px;
+            }
+            .random-result.is-triangle .random-char .emoji-avatar {
+                font-size: 34px;
+            }
+            .random-result.is-triangle .random-char .random-char-name {
+                font-size: 12px;
+            }
+            .random-result.is-triangle .random-heart {
+                font-size: 26px;
             }
             .draw-btn {
                 width: 100%;
@@ -1064,6 +1091,7 @@
                 <label class="filter-item"><input type="checkbox" id="chkExcludeControversial"> <span data-i18n="random.excludeControversial">排除争议角色</span></label>
                 <label class="filter-item"><input type="checkbox" id="chkHighFreq"> <span data-i18n="random.highFreq">仅限高频角色</span></label>
                 <label class="filter-item"><input type="checkbox" id="chkAnimal"> <span data-i18n="random.animal">允许动物参与</span></label>
+                <label class="filter-item"><input type="checkbox" id="chkTriangle"> <span data-i18n="random.triangle">三角恋模式（抽3人）</span></label>
             </div>
             
             <button class="draw-btn" id="drawBtn" onclick="drawCP()" data-i18n="random.draw">抽 取 CP</button>
@@ -1142,6 +1170,7 @@
                 'random.excludeControversial': '排除争议角色',
                 'random.highFreq': '仅限高频角色',
                 'random.animal': '允许动物参与',
+                'random.triangle': '三角恋模式（抽3人）',
                 'random.draw': '抽 取 CP',
                 'random.drawing': '抽 取 中',
                 'random.drawAgain': '再 抽 一 次',
@@ -1206,6 +1235,7 @@
                 'random.excludeControversial': 'Exclude Controversial',
                 'random.highFreq': 'High-Frequency Only',
                 'random.animal': 'Allow Animals',
+                'random.triangle': 'Triangle Mode (3 chars)',
                 'random.draw': 'DRAW CP',
                 'random.drawing': 'DRAWING',
                 'random.drawAgain': 'DRAW AGAIN',
@@ -1270,6 +1300,7 @@
                 'random.excludeControversial': '議論キャラを除外',
                 'random.highFreq': '高頻度キャラのみ',
                 'random.animal': '動物を許可',
+                'random.triangle': '三角関係モード（3人）',
                 'random.draw': 'CPを引く',
                 'random.drawing': '抽選中',
                 'random.drawAgain': 'もう一度引く',
@@ -1357,7 +1388,7 @@
             renderRandomHistory();
             // 若已有抽取结果，重渲染以更新角色名
             if (currentRandomPair) {
-                renderRandomPair(currentRandomPair.charA, currentRandomPair.charB, false);
+                renderRandomPair(currentRandomPair.charA, currentRandomPair.charB, false, currentRandomPair.charC);
             }
         }
         
@@ -1464,8 +1495,9 @@
         const cpRelations = [];
         
         // 随机CP抽取器状态
-        const drawnCombos = new Set(); // 已抽取过的组合（"idA-idB"，idA < idB）
-        let currentRandomPair = null; // 当前抽取结果 {charA, charB}
+        const drawnCombos = new Set(); // 已抽取过的两人组合（"idA-idB"，idA < idB）
+        const drawnTriples = new Set(); // 已抽取过的三人组合（"idA-idB-idC"，排序后）
+        let currentRandomPair = null; // 当前抽取结果 {charA, charB, charC}（charC 为 null 表示两人模式）
         let isDrawing = false; // 是否正在抽取中
         const HISTORY_KEY = 'jiangguo_cp_history';
         
@@ -1832,59 +1864,91 @@
             return pool;
         }
         
-        // 获取组合key（保证无序：小id在前）
-        function comboKey(idA, idB) {
-            return idA < idB ? `${idA}-${idB}` : `${idB}-${idA}`;
+        // 获取组合key（保证无序：按 id 升序排列后拼接）
+        function comboKey(...ids) {
+            return [...ids].sort((a, b) => a - b).join('-');
         }
         
-        // 随机抽取一对不同角色，且不重复已抽过的组合
+        // 是否开启三角恋模式
+        function isTriangleMode() {
+            const chk = document.getElementById('chkTriangle');
+            return chk ? chk.checked : false;
+        }
+        
+        // 随机抽取角色（两人或三人），且不重复已抽过的组合
         function pickRandomPair() {
             const pool = buildDrawPool();
             const total = pool.length;
-            if (total < 2) {
+            const triangle = isTriangleMode();
+            const need = triangle ? 3 : 2;
+            if (total < need) {
                 alert(t('random.alertNotEnough'));
                 return null;
             }
-            // 计算总可能组合数
-            const maxCombos = total * (total - 1) / 2;
+            // 计算总可能组合数 C(total, need)
+            let maxCombos;
+            if (triangle) {
+                maxCombos = total * (total - 1) * (total - 2) / 6;
+            } else {
+                maxCombos = total * (total - 1) / 2;
+            }
+            const usedSet = triangle ? drawnTriples : drawnCombos;
             // 若全部组合已抽完，重置已抽集合
-            if (drawnCombos.size >= maxCombos) {
-                drawnCombos.clear();
+            if (usedSet.size >= maxCombos) {
+                usedSet.clear();
             }
             // 随机选取，直到得到未抽过的组合
-            let idA, idB, key;
+            let picked, key;
             let attempts = 0;
             do {
-                idA = pool[Math.floor(Math.random() * total)];
-                do {
-                    idB = pool[Math.floor(Math.random() * total)];
-                } while (idB.id === idA.id);
-                key = comboKey(idA.id, idB.id);
+                picked = [];
+                while (picked.length < need) {
+                    const c = pool[Math.floor(Math.random() * total)];
+                    if (!picked.find(p => p.id === c.id)) picked.push(c);
+                }
+                key = comboKey(...picked.map(p => p.id));
                 attempts++;
-                // 兜底：防止极端情况下死循环
                 if (attempts > 500) break;
-            } while (drawnCombos.has(key));
-            drawnCombos.add(key);
-            return { charA: idA, charB: idB };
+            } while (usedSet.has(key));
+            usedSet.add(key);
+            return {
+                charA: picked[0],
+                charB: picked[1],
+                charC: triangle ? picked[2] : null
+            };
         }
         
-        // 渲染抽取结果
-        function renderRandomPair(charA, charB, drawing) {
+        // 渲染抽取结果（支持两人或三人）
+        function renderRandomPair(charA, charB, drawing, charC) {
             const result = document.getElementById('randomResult');
             const cls = drawing ? 'random-char drawing' : 'random-char';
-            result.innerHTML = `
+            const isTri = !!charC;
+            // 根据人数调整容器尺寸类
+            result.classList.toggle('is-triangle', isTri);
+            const heart = '<div class="random-heart">×</div>';
+            let inner = `
                 <div class="random-pair">
                     <div class="${cls}" id="randCharA">
                         ${avatarHTML(charA)}
                         <div class="random-char-name">${charName(charA)}</div>
                     </div>
-                    <div class="random-heart">×</div>
+                    ${heart}
                     <div class="${cls}" id="randCharB">
                         ${avatarHTML(charB)}
                         <div class="random-char-name">${charName(charB)}</div>
                     </div>
-                </div>
             `;
+            if (isTri) {
+                inner += `
+                    ${heart}
+                    <div class="${cls}" id="randCharC">
+                        ${avatarHTML(charC)}
+                        <div class="random-char-name">${charName(charC)}</div>
+                    </div>
+                `;
+            }
+            inner += `</div>`;
+            result.innerHTML = inner;
         }
         
         // 抽取CP（含短暂动画）
@@ -1895,6 +1959,7 @@
             const finalPair = pickRandomPair();
             if (!finalPair) return;
             
+            const triangle = isTriangleMode();
             isDrawing = true;
             const drawBtn = document.getElementById('drawBtn');
             drawBtn.disabled = true;
@@ -1908,15 +1973,25 @@
             const frames = Math.floor(duration / interval);
             let frame = 0;
             
+            // 随机选取 pool 中不重复的 n 个角色
+            function pickNDistinct(n) {
+                const chosen = [];
+                while (chosen.length < n) {
+                    const c = pool[Math.floor(Math.random() * total)];
+                    if (!chosen.find(x => x.id === c.id)) chosen.push(c);
+                }
+                return chosen;
+            }
+            
             const timer = setInterval(() => {
                 frame++;
                 if (frame >= frames) {
                     clearInterval(timer);
                     // 展示最终结果
-                    renderRandomPair(finalPair.charA, finalPair.charB, false);
+                    renderRandomPair(finalPair.charA, finalPair.charB, false, finalPair.charC);
                     currentRandomPair = finalPair;
                     // 加入历史记录
-                    addToHistory(finalPair.charA, finalPair.charB);
+                    addToHistory(finalPair.charA, finalPair.charB, finalPair.charC);
                     // 恢复按钮
                     isDrawing = false;
                     drawBtn.disabled = false;
@@ -1924,12 +1999,8 @@
                     return;
                 }
                 // 滚动期间随机显示角色
-                const tmpA = pool[Math.floor(Math.random() * total)];
-                let tmpB = pool[Math.floor(Math.random() * total)];
-                while (tmpB.id === tmpA.id) {
-                    tmpB = pool[Math.floor(Math.random() * total)];
-                }
-                renderRandomPair(tmpA, tmpB, true);
+                const tmp = pickNDistinct(triangle ? 3 : 2);
+                renderRandomPair(tmp[0], tmp[1], true, triangle ? tmp[2] : null);
             }, interval);
         }
         
@@ -1939,7 +2010,10 @@
                 alert(t('random.alertFirst'));
                 return;
             }
-            const text = `${charName(currentRandomPair.charA)} × ${charName(currentRandomPair.charB)}`;
+            const { charA, charB, charC } = currentRandomPair;
+            const names = [charName(charA), charName(charB)];
+            if (charC) names.push(charName(charC));
+            const text = names.join(' × ');
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
                     alert(t('random.alertCopied') + text);
@@ -2011,13 +2085,15 @@
             } catch (e) {}
         }
         
-        function addToHistory(charA, charB) {
+        function addToHistory(charA, charB, charC) {
             const list = getHistory();
-            list.unshift({
+            const item = {
                 charAId: charA.id,
                 charBId: charB.id,
                 time: Date.now()
-            });
+            };
+            if (charC) item.charCId = charC.id;
+            list.unshift(item);
             // 只保留最近10条
             if (list.length > 10) list.length = 10;
             saveHistory(list);
@@ -2052,13 +2128,19 @@
             container.innerHTML = list.map(item => {
                 const charA = getCharById(item.charAId);
                 const charB = getCharById(item.charBId);
+                const charC = item.charCId ? getCharById(item.charCId) : null;
                 if (!charA || !charB) return '';
+                const times = '<span style="color:#222; font-weight:300;">×</span>';
+                const charCBlock = charC ? `
+                        ${times}
+                        ${avatarHTML(charC)}` : '';
+                const charCName = charC ? ` × ${charName(charC)}${specialTag(charC)}` : '';
                 return `
                     <div class="history-item">
                         ${avatarHTML(charA)}
-                        <span style="color:#222; font-weight:300;">×</span>
-                        ${avatarHTML(charB)}
-                        <div class="history-names">${charName(charA)}${specialTag(charA)} × ${charName(charB)}${specialTag(charB)}</div>
+                        ${times}
+                        ${avatarHTML(charB)}${charCBlock}
+                        <div class="history-names">${charName(charA)}${specialTag(charA)} × ${charName(charB)}${specialTag(charB)}${charCName}</div>
                         <div class="history-time">${formatTime(item.time)}</div>
                     </div>
                 `;
